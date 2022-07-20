@@ -18,8 +18,12 @@
             android:id="@+id/toolbar_gchannel"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:textAlignment="textEnd"
             android:theme="@style/Widget.AppCompat.Toolbar"
-            app:popupTheme="@style/Theme.AppCompat.Light">
+            app:popupTheme="@style/Theme.AppCompat.Light"
+            app:title="Person"
+            app:titleMargin="14dp"
+            app:titleTextColor="#FFFFFF">
 
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
@@ -46,7 +50,7 @@
         android:id="@+id/view"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#e0e0e0"
+        android:background="#000000"
         app:layout_constraintBottom_toTopOf="@+id/layout_gchat_chatbox" />
 
     <RelativeLayout
@@ -57,11 +61,11 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <EditText
-            android:layout_marginStart="16dp"
             android:id="@+id/edit_gchat_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
             android:layout_toStartOf="@+id/button_gchat_send"
             android:background="@android:color/transparent"
             android:hint="Enter Message"
