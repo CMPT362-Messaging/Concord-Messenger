@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Concord Messenger</string>
+
+    <!-- Login -->
+    <string name="login_login">Login</string>
+    <string name="login_register">Register</string>
+    <string name="login_username">Username</string>
+    <string name="login_password">Password</string>
+    <string name="login_create_account">Create Account</string>
+    <string name="login_back">Back</string>
 </resources>
