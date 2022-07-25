@@ -30,6 +30,7 @@ class ChatActivity : AppCompatActivity() {
             messageList.add(MessageContent(editText.text.toString(), null, 0))
             editText.text.clear()
             messageAdapter.notifyItemInserted(messageList.size - 1)
+            messageRecycler.scrollToPosition(messageAdapter.itemCount - 1)
         }
     }
 }
