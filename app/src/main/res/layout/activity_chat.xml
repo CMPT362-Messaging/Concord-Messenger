@@ -69,9 +69,11 @@
             android:layout_toStartOf="@+id/button_gchat_send"
             android:background="@android:color/transparent"
             android:hint="Enter Message"
-            android:inputType="text"
+            android:inputType="textCapSentences|textMultiLine"
             android:maxLines="6"
-            tools:ignore="Autofill" />
+            tools:ignore="Autofill"
+            android:maxLength ="2000"
+            android:scrollHorizontally="false"/>
 
         <Button
             android:id="@+id/button_gchat_send"
