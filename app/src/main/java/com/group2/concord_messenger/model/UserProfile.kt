@@ -7,11 +7,11 @@ import java.util.*
 
 
 class UserProfile(var uId: String = "0",
-                       var userName: String="",
-                       var idToken: String="",
-                       val groups: MutableMap<String, Any>? = null,
-                       var email: String="",
-                       @ServerTimestamp
+                  var userName: String="",
+                  var idToken: String="",
+                  var groups: MutableMap<String, Any>? = null,
+                  var email: String="",
+                  @ServerTimestamp
                        var createdAt: Date?=null) : Serializable {
                            fun UserProfile() {
 

@@ -51,6 +51,8 @@ dependencies {
     // Firebase UI Library
     implementation 'com.firebaseui:firebase-ui-auth:7.2.0'
     implementation 'com.firebaseui:firebase-ui-database:7.2.0'
+    implementation 'com.firebaseui:firebase-ui-firestore:8.0.1'
+    implementation 'com.firebaseui:firebase-ui-storage:8.0.1'
     implementation 'com.google.android.gms:play-services-auth:20.2.0'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.5.0'
     implementation 'androidx.navigation:navigation-ui-ktx:2.5.0'

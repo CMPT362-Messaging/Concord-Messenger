@@ -8,6 +8,7 @@ import kotlin.collections.ArrayList
 
 class ConcordMessage(
     val fromUid: String = "",
+    val fromName: String = "",
     var text: String = "Default message",
     @ServerTimestamp
-    var createdAt: Date? = Date()) : Serializable
+    var createdAt: Date? = null) : Serializable
