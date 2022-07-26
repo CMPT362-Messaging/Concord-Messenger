@@ -71,7 +71,7 @@ class ContactsActivity : AppCompatActivity() {
                                     }
                                 }
                                 val adapter = ArrayAdapter(this,
-                                    android.R.layout.simple_list_item_2, contactsNames)
+                                    android.R.layout.activity_list_item, android.R.id.text1, contactsNames)
                                 listView.adapter = adapter
                             } else {
                                 println("Getting list of users was unsuccessful")
