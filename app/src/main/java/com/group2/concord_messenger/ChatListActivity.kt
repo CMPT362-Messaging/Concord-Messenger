@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ContentValues
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -13,6 +14,7 @@ import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.ListView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -47,7 +49,6 @@ class ChatListActivity : AppCompatActivity() {
     private var email: String? = null
     private lateinit var credential: AuthCredential
     private lateinit var chatsListView: ListView
-    private lateinit var chatsRecyclerView: RecyclerView
     private var chatListAdapter: ChatListAdapter? = null
 
     private lateinit var binding: ActivityChatListBinding
@@ -88,7 +89,7 @@ class ChatListActivity : AppCompatActivity() {
                 with messages using the FCM send API */
         })
 
-        chatsRecyclerView = findViewById(R.id.current_chats_recyclerView)
+        chatsListView = findViewById(R.id.current_chats_listView)
 
         // Now begin a chain of asynchronous calls
         // Authenticate user -> insert user into db ->
@@ -189,57 +190,43 @@ class ChatListActivity : AppCompatActivity() {
         val options = FirestoreRecyclerOptions.Builder<UserProfile>()
             .setQuery(query, UserProfile::class.java).build()
 
-        chatListAdapter = ChatListAdapter(options)
-        chatsRecyclerView.layoutManager = LinearLayoutManager(this)
-        // The RecyclerView itemAnimator needs to be set to null otherwise it
-        // will throw an out of bounds exception
-        chatsRecyclerView.itemAnimator = null
-        chatListAdapter!!.startListening()
-        chatsRecyclerView.adapter = chatListAdapter
+        val currentChatNames = ArrayList<String>()
+        val userList = ArrayList<UserProfile>()
+        val groupsList = ArrayList<String>()
+        val adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
+            android.R.id.text1, currentChatNames)
 
-        val uIRef = fsDb.collection("users").document(userId!!)
-        uIRef.get().addOnCompleteListener {
-            if (it.isSuccessful) {
-                val doc = it.result
-                if (doc.exists()) {
-                    val fromUser = doc.toObject(UserProfile::class.java)!!
+        chatsListView.adapter = adapter
 
-                    val groupsRef = fsDb.collection("groups").document(fromUser.uId)
-                        .collection("userGroups")
-
-                    groupsRef.get().addOnCompleteListener { p ->
-                        if (p.isSuccessful) {
-                            val currentChatNames = ArrayList<String>()
-                            val userList = ArrayList<UserProfile>()
-                            val groupsList = ArrayList<String>()
-                            for (i in p.result) {
-                                val contact = i.toObject(UserProfile::class.java)
-                                if (contact.uId != fromUser.uId) {
-                                    currentChatNames.add(contact.userName)
-                                    userList.add(contact)
-                                    // Document id works as the group id
-                                    groupsList.add(i.id)
-                                }
-                            }
-
-                            // This is how an onItemClickListener is implemented for a RecyclerView
-                            // it is a pain and uses a custom interface in the Adapter
-                            chatListAdapter!!.setOnItemClickListener(object : ChatListAdapter.ClickListener{
-                                override fun onItemClicked(position: Int) {
-                                    val intent = Intent(this@ChatListActivity, ChatActivity::class.java)
-                                    intent.putExtra("fromUser", fromUser)
-                                    intent.putExtra("toUser", userList[position])
-                                    intent.putExtra("roomId", groupsList[position])
-                                    startActivity(intent)
-                                }
-                            })
-
-                        } else {
-                            println("Getting list of current chats was unsuccessful")
-                        }
+        val docRef = fsDb.collection("groups")
+            .document(userId!!).collection("userGroups")
+        docRef.addSnapshotListener {snapshot, e ->
+            if (e != null) {
+                Log.w(TAG, "Listen failed.", e)
+                return@addSnapshotListener
+            }
+            if (snapshot != null) {
+                Log.d(TAG, "Current data: ${snapshot.size()}")
+                for (i in snapshot.documents) {
+                    val contact = i.toObject(UserProfile::class.java)
+                    if (contact!!.uId != fromUser!!.uId) {
+                        currentChatNames.add(contact.userName)
+                        userList.add(contact)
+                        // Document id works as the group id
+                        groupsList.add(i.id)
                     }
                 }
+                adapter.notifyDataSetChanged()
+            } else {
+                Log.d(TAG, "Current data: null")
             }
+        }
+        chatsListView.setOnItemClickListener { parent, view, position, id ->
+            val intent = Intent(this@ChatListActivity, ChatActivity::class.java)
+            intent.putExtra("fromUser", fromUser)
+            intent.putExtra("toUser", userList[position])
+            intent.putExtra("roomId", groupsList[position])
+            startActivity(intent)
         }
     }
 
