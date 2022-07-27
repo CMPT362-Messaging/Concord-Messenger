@@ -19,7 +19,7 @@
             android:name=".ContactsActivity"
             android:exported="false" />
         <activity
-            android:name=".ChatListActivity"
+            android:name="com.group2.concord_messenger.ChatListActivity"
             android:exported="true"
             android:label="@string/title_activity_chat_list"
             android:theme="@style/Theme.ConcordMessenger.NoActionBar">

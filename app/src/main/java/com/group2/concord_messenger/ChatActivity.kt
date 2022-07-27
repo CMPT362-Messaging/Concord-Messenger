@@ -1,6 +1,10 @@
 package com.group2.concord_messenger
 
+import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
@@ -13,9 +17,14 @@ import com.google.firebase.auth.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
+import com.group2.concord_messenger.model.ChatListAdapter
 import com.group2.concord_messenger.model.ChatMessageListAdapter
 import com.group2.concord_messenger.model.ConcordMessage
 import com.group2.concord_messenger.model.UserProfile
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.collections.ArrayList
 
 
@@ -50,41 +59,97 @@ class ChatActivity : AppCompatActivity() {
         fromGroups = fromUser.groups
         toGroups = toUser.groups
         groupId = intent.extras?.get("roomId") as String
-        if (groupId == "none") {
-            groupId = fsDb.collection("messages").document().id
-            println("New groupId: $groupId")
+
+        updateCurrentUser()
+    }
+
+    private fun updateCurrentUser() {
+        // Update user groups if they've been added to any
+        val uIRef = fsDb.collection("users").document(fromUser.uId)
+        uIRef.get().addOnCompleteListener {
+            if (it.isSuccessful && it.result.exists()) {
+                val doc = it.result
+                val userSnapshot = doc.toObject(UserProfile::class.java)
+                fromUser.groups = userSnapshot!!.groups
+                fromGroups = fromUser.groups
+                if (userSnapshot.groups != null) {
+                    println("There was historical data: ${userSnapshot.groups!!.size}")
+                    println("New user group size: ${fromUser.groups!!.size}")
+                }
+            } else {
+                println("No historical data to retrieve")
+            }
+
+            // Now safe to look for existing chats
+            // Look first in the easy place, in the groups associated with the current user
             if (fromGroups != null) {
                 for ((key, v) in fromGroups!!) {
                     if (toGroups != null) {
                         if (toGroups!!.contains(key)) {
                             groupId = key
+                            println("Already existing chat found in fromUser's groups")
                         }
                     }
                 }
             }
+            // Chat still wasn't found so we can be assured this is
+            // a new chat and generate a new group id
+            if (groupId == "none") {
+                groupId = fsDb.collection("messages").document().id
+                println("Chat was not found, generating a new id")
+            }
+
+            // Get all messages associated with this group from the remote db
+            val query = fsDb.collection("messages")
+                .document(groupId).collection("groupMessages")
+                .orderBy("createdAt", Query.Direction.ASCENDING)
+            val options = FirestoreRecyclerOptions.Builder<ConcordMessage>()
+                .setQuery(query, ConcordMessage::class.java).build()
+
+            val messageRecycler: RecyclerView = findViewById(R.id.recycler_gchat)
+            messageAdapter = ChatMessageListAdapter(fromUser.uId,
+                messageRecycler, options)
+            // Add adapter (with messages) to the RecyclerView
+            messageRecycler.layoutManager = LinearLayoutManager(this)
+            messageRecycler.adapter = messageAdapter
+            messageAdapter!!.startListening()
+            println("Here")
+
+            sendBtn.setOnClickListener {
+                val message = ConcordMessage(fromUser.uId, fromUser.userName,editText.text.toString())
+                editText.text.clear()
+                sendMessage(message)
+            }
         }
+    }
 
-        // Get all messages associated with this group from the remote db
-        val query = fsDb.collection("messages")
-            .document(groupId).collection("groupMessages")
-            .orderBy("createdAt", Query.Direction.ASCENDING)
-        val options = FirestoreRecyclerOptions.Builder<ConcordMessage>()
-            .setQuery(query, ConcordMessage::class.java).build()
-
-
-
-        val messageRecycler: RecyclerView = findViewById(R.id.recycler_gchat)
-        messageAdapter = ChatMessageListAdapter(fromUser.uId,
-            messageRecycler, options)
-        // Add adapter (with messages) to the RecyclerView
-        messageRecycler.layoutManager = LinearLayoutManager(this)
-        messageRecycler.adapter = messageAdapter
-
-        sendBtn.setOnClickListener {
-            val message = ConcordMessage(fromUser.uId, fromUser.userName,editText.text.toString())
-            editText.text.clear()
-
-            sendMessage(message)
+    private fun lookForExistingChat() {
+        // If the id wasn't found do a query for it
+        if (groupId == "none") {
+            val uIRef = fsDb.collection("users").document(toUser.uId)
+            uIRef.get().addOnCompleteListener {
+                if (it.isSuccessful) {
+                    val doc = it.result
+                    if (doc.exists()) {
+                        val groupsRef = fsDb.collection("groups").document(toUser.uId)
+                            .collection("userGroups")
+                        groupsRef.get().addOnCompleteListener { p ->
+                            if (p.isSuccessful) {
+                                for (i in p.result) {
+                                    val contact = i.toObject(UserProfile::class.java)
+                                    println("lookForExistingChat: Contact name: ${contact.userName}")
+                                    println("lookForExistingChat: Contact id: ${contact.uId}")
+                                    println("lookForExistingChat: fromUser id: ${fromUser.uId}")
+                                    if (contact.uId == fromUser.uId) {
+                                        groupId = i.id
+                                        println("Found an already existing chat: $groupId")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -108,6 +173,8 @@ class ChatActivity : AppCompatActivity() {
         // Indicate that this user is apart of this chat group
         toGroups!![groupId] = true
         toUser.groups = toGroups
+        println("sendMessage: toUser: ${toUser.userName}, ${toUser.uId}")
+        println("sendMessage: toUser groups size ${toUser.groups!!.size}")
         // Write this new data to the db
         fsDb.collection("users").document(toUser.uId)
             .set(toUser, SetOptions.merge())

@@ -31,15 +31,6 @@ class ContactsActivity : AppCompatActivity() {
 
         listView = findViewById(R.id.contacts_listView)
         populateListView()
-
-        listView.setOnItemClickListener { parent, view, position, id ->
-            val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("fromUser", fromUser)
-            intent.putExtra("toUser", contactsList[position])
-            intent.putExtra("roomId", "none")
-            startActivity(intent)
-            finish()
-        }
     }
 
     private fun populateListView() {
@@ -53,8 +44,14 @@ class ContactsActivity : AppCompatActivity() {
                     val doc = it.result
                     if (doc.exists()) {
                         fromUser = doc.toObject(UserProfile::class.java)!!
-                        /*val userContactsRef = fsDb.collection("contacts")
-                            .document(fromUId).collection("userContacts")*/
+                        println("populateListView: fromUser: ${fromUser.userName}")
+                        if (fromUser.groups != null) {
+                            println("fromUser groups is not null, size: ${fromUser.groups!!.size}")
+                        } else {
+                            println("fromUser's group is null")
+                        }
+                        // Get all users so the current user can start a chat with
+                        // any user registered with the app
                         val userContactsRef = fsDb.collection("users")
                         userContactsRef.get().addOnCompleteListener { p ->
                             if (p.isSuccessful) {
@@ -71,8 +68,16 @@ class ContactsActivity : AppCompatActivity() {
                                     }
                                 }
                                 val adapter = ArrayAdapter(this,
-                                    android.R.layout.activity_list_item, android.R.id.text1, contactsNames)
+                                    android.R.layout.simple_list_item_1, android.R.id.text1, contactsNames)
                                 listView.adapter = adapter
+                                listView.setOnItemClickListener { parent, view, position, id ->
+                                    val intent = Intent(this, ChatActivity::class.java)
+                                    intent.putExtra("fromUser", fromUser)
+                                    intent.putExtra("toUser", contactsList[position])
+                                    intent.putExtra("roomId", "none")
+                                    startActivity(intent)
+                                    finish()
+                                }
                             } else {
                                 println("Getting list of users was unsuccessful")
                             }
