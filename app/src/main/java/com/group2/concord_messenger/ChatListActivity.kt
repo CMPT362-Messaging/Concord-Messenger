@@ -5,34 +5,23 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ContentValues
 import android.content.ContentValues.TAG
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.GestureDetector
-import android.view.GestureDetector.SimpleOnGestureListener
-import android.view.MotionEvent
-import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
-import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.messaging.FirebaseMessaging
 import com.group2.concord_messenger.databinding.ActivityChatListBinding
-import com.group2.concord_messenger.model.ChatListAdapter
 import com.group2.concord_messenger.model.UserProfile
 
 
@@ -40,7 +29,6 @@ class ChatListActivity : AppCompatActivity() {
     // The Firestore database where all messages will be added
     private lateinit var fsDb: FirebaseFirestore
     private lateinit var firebaseAuth: FirebaseAuth
-    private var user: FirebaseUser? = null
     private var googleAccount: GoogleSignInAccount? = null
     private var fromUser: UserProfile? = null
     private var userId: String? = null
@@ -49,7 +37,7 @@ class ChatListActivity : AppCompatActivity() {
     private var email: String? = null
     private lateinit var credential: AuthCredential
     private lateinit var chatsListView: ListView
-    private var chatListAdapter: ChatListAdapter? = null
+    private var chatListAdapter: ArrayAdapter<String>? = null
 
     private lateinit var binding: ActivityChatListBinding
 
@@ -82,7 +70,7 @@ class ChatListActivity : AppCompatActivity() {
                 return@OnCompleteListener
             }
 
-            // Token is unique to current phone will be reset once the user uninstalls the app
+            // Token is unique to current phone and will be reset once the user uninstalls the app
             val token = task.result
             Log.println(Log.DEBUG, "Chat", "token: $token")
             /* TODO: send to backend so that token can be used to target this device
@@ -91,8 +79,8 @@ class ChatListActivity : AppCompatActivity() {
 
         chatsListView = findViewById(R.id.current_chats_listView)
 
-        // Now begin a chain of asynchronous calls
-        // Authenticate user -> insert user into db ->
+        // Now begins a chain of asynchronous calls
+        // Authenticate user -> insert user into db/update user ->
         // -> show current chats associated with this user -> enable ability to make new chats
 
         // Sign the user in using their Google account
@@ -185,28 +173,32 @@ class ChatListActivity : AppCompatActivity() {
     }
 
     private fun showCurrentChats() {
-        val query = fsDb.collection("groups")
-            .document(userId!!).collection("userGroups")
-        val options = FirestoreRecyclerOptions.Builder<UserProfile>()
-            .setQuery(query, UserProfile::class.java).build()
-
         val currentChatNames = ArrayList<String>()
         val userList = ArrayList<UserProfile>()
         val groupsList = ArrayList<String>()
-        val adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
+        chatListAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1,
             android.R.id.text1, currentChatNames)
 
-        chatsListView.adapter = adapter
+        chatsListView.adapter = chatListAdapter
 
-        val docRef = fsDb.collection("groups")
+        val ref = fsDb.collection("groups")
             .document(userId!!).collection("userGroups")
-        docRef.addSnapshotListener {snapshot, e ->
+
+        // Listen for changes in current chats user is a part of
+        ref.addSnapshotListener {snapshot, e ->
             if (e != null) {
                 Log.w(TAG, "Listen failed.", e)
                 return@addSnapshotListener
             }
             if (snapshot != null) {
-                Log.d(TAG, "Current data: ${snapshot.size()}")
+                Log.d(TAG, "Current data size: ${snapshot.size()}")
+                // Clear adapter and all lists so there is no possibility
+                // of duplicate entries
+                chatListAdapter!!.clear()
+                currentChatNames.clear()
+                userList.clear()
+                groupsList.clear()
+                // Add all new data
                 for (i in snapshot.documents) {
                     val contact = i.toObject(UserProfile::class.java)
                     if (contact!!.uId != fromUser!!.uId) {
@@ -216,7 +208,7 @@ class ChatListActivity : AppCompatActivity() {
                         groupsList.add(i.id)
                     }
                 }
-                adapter.notifyDataSetChanged()
+                chatListAdapter!!.notifyDataSetChanged()
             } else {
                 Log.d(TAG, "Current data: null")
             }
@@ -227,27 +219,6 @@ class ChatListActivity : AppCompatActivity() {
             intent.putExtra("toUser", userList[position])
             intent.putExtra("roomId", groupsList[position])
             startActivity(intent)
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        if (chatListAdapter != null) {
-            chatListAdapter!!.startListening()
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (chatListAdapter != null) {
-            chatListAdapter!!.startListening()
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        if (chatListAdapter != null) {
-            chatListAdapter!!.stopListening()
         }
     }
 }

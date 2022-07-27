@@ -1,10 +1,8 @@
 package com.group2.concord_messenger
 
-import android.content.Intent
+import android.content.ContentValues.TAG
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.view.View
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
@@ -12,20 +10,13 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.auth.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
-import com.group2.concord_messenger.model.ChatListAdapter
 import com.group2.concord_messenger.model.ChatMessageListAdapter
 import com.group2.concord_messenger.model.ConcordMessage
 import com.group2.concord_messenger.model.UserProfile
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.collections.ArrayList
 
 
 class ChatActivity : AppCompatActivity() {
@@ -96,7 +87,7 @@ class ChatActivity : AppCompatActivity() {
             // a new chat and generate a new group id
             if (groupId == "none") {
                 groupId = fsDb.collection("messages").document().id
-                println("Chat was not found, generating a new id")
+                Log.w(TAG, "Chat was not found, generating a new id")
             }
 
             // Get all messages associated with this group from the remote db
@@ -113,42 +104,11 @@ class ChatActivity : AppCompatActivity() {
             messageRecycler.layoutManager = LinearLayoutManager(this)
             messageRecycler.adapter = messageAdapter
             messageAdapter!!.startListening()
-            println("Here")
 
             sendBtn.setOnClickListener {
                 val message = ConcordMessage(fromUser.uId, fromUser.userName,editText.text.toString())
                 editText.text.clear()
                 sendMessage(message)
-            }
-        }
-    }
-
-    private fun lookForExistingChat() {
-        // If the id wasn't found do a query for it
-        if (groupId == "none") {
-            val uIRef = fsDb.collection("users").document(toUser.uId)
-            uIRef.get().addOnCompleteListener {
-                if (it.isSuccessful) {
-                    val doc = it.result
-                    if (doc.exists()) {
-                        val groupsRef = fsDb.collection("groups").document(toUser.uId)
-                            .collection("userGroups")
-                        groupsRef.get().addOnCompleteListener { p ->
-                            if (p.isSuccessful) {
-                                for (i in p.result) {
-                                    val contact = i.toObject(UserProfile::class.java)
-                                    println("lookForExistingChat: Contact name: ${contact.userName}")
-                                    println("lookForExistingChat: Contact id: ${contact.uId}")
-                                    println("lookForExistingChat: fromUser id: ${fromUser.uId}")
-                                    if (contact.uId == fromUser.uId) {
-                                        groupId = i.id
-                                        println("Found an already existing chat: $groupId")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
     }
