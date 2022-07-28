@@ -10,7 +10,7 @@
         android:id="@+id/register_textview_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="50dp"
         android:text="@string/app_name"
         android:textColor="@color/purple_500"
         android:textSize="35sp"
@@ -23,7 +23,7 @@
         android:id="@+id/register_textview_username"
         android:layout_width="260dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="60dp"
         android:text="@string/login_username"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -45,6 +45,31 @@
         tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
 
     <TextView
+        android:id="@+id/register_textview_email"
+        android:layout_width="260dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/login_email"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/register_edittext_username" />
+
+    <EditText
+        android:id="@+id/register_edittext_email"
+        android:layout_width="260dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/register_textview_email"
+        tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+    <TextView
         android:id="@+id/register_textview_password"
         android:layout_width="260dp"
         android:layout_height="wrap_content"
@@ -54,7 +79,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/register_edittext_username" />
+        app:layout_constraintTop_toBottomOf="@id/register_edittext_email" />
 
     <EditText
         android:id="@+id/register_edittext_password"
@@ -98,7 +123,7 @@
         android:id="@+id/register_button_create_account"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="60dp"
         android:text="@string/login_create_account"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
