@@ -5,8 +5,16 @@
     <string name="login_login">Login</string>
     <string name="login_register">Register</string>
     <string name="login_username">Username</string>
+    <string name="login_email">Email</string>
     <string name="login_password">Password</string>
     <string name="login_create_account">Create Account</string>
     <string name="login_back">Back</string>
     <string name="login_confirm_password">Confirm Password</string>
+
+    <string name="login_error_empty_field">Field cannot be empty</string>
+    <string name="login_error_password_not_match">Does not match password</string>
+    <string name="login_error_invalid_username">Username is invalid</string>
+    <string name="login_error_invalid_email">Email is invalid</string>
+    <string name="login_error_invalid_password">Password should be at least 6 characters</string>
+    <string name="login_error_account_exists">An account with this email already exists</string>
 </resources>
