@@ -74,7 +74,8 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener
             passConfirmationInputView,
         ))
 
-        //
+        // No blank fields or FireBase will throw an IllegalArgument
+        // Passwords must match
         if(username.isBlank() || email.isBlank() || password.isBlank() ||
             password_confirm.isBlank() || password != password_confirm)
         {
@@ -101,26 +102,35 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener
         }
         else
         {
+            // Create account
             firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener()
             {
+                // Account created successfully
                 authResult ->
                 if(authResult.isSuccessful)
                 {
-                    // Registration successful
+                    // Set account's username
+                    val displayNameChange = UserProfileChangeRequest.Builder()
+                        .setDisplayName(username)
+                        .build()
+                    firebaseAuth.currentUser?.updateProfile(displayNameChange)
                 }
                 else
                 {
+                    // Failed to create account
                     when(authResult.exception!!::class)
                     {
+                        // https://firebase.google.com/docs/reference/kotlin/com/google/firebase/auth/FirebaseAuth#exceptions_1
+                        // Invalid email
                         FirebaseAuthInvalidCredentialsException::class ->
                             showFieldError(emailInputView, resources.getString(R.string.login_error_invalid_email))
-
+                        // Email already in use
                         FirebaseAuthUserCollisionException::class ->
                             showFieldError(emailInputView, resources.getString(R.string.login_error_account_exists))
-
+                        // Weak password
                         FirebaseAuthWeakPasswordException::class ->
                             showFieldError(passInputView, resources.getString(R.string.login_error_invalid_password))
-
+                        // Something broke
                         else -> {authResult.exception!!.printStackTrace()}
                     }
                 }
