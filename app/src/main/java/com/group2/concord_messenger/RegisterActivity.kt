@@ -4,7 +4,6 @@ import android.content.pm.ActivityInfo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
@@ -15,6 +14,9 @@ import com.google.firebase.ktx.Firebase
 
 class RegisterActivity : AppCompatActivity(), View.OnClickListener
 {
+    private lateinit var inputViews: List<TextInputLayout>
+    private lateinit var interactableViews: List<View>
+
     private lateinit var firebaseAuth: FirebaseAuth
 
     private lateinit var usernameInputLayoutView: TextInputLayout
@@ -52,6 +54,21 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener
         createAccountButtonView.setOnClickListener(this)
         backButtonView.setOnClickListener(this)
 
+        inputViews = listOf(
+            usernameInputLayoutView,
+            emailInputLayoutView,
+            passInputLayoutView,
+            passConfirmInputLayoutView
+        )
+        interactableViews = listOf(
+            usernameInputLayoutView,
+            emailInputLayoutView,
+            passInputLayoutView,
+            passConfirmInputLayoutView,
+            createAccountButtonView,
+            backButtonView
+        )
+
         firebaseAuth = Firebase.auth
     }
 
@@ -67,30 +84,34 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener
                 val password = passInputView.text.toString()
                 val passwordConfirm = passConfirmInputView.text.toString()
 
+                // Clear old errors from input fields
+                clearFieldErrors(inputViews)
+                // Clear focused fields
+                clearFocuses(interactableViews)
+                // Close the keyboard
+                closeKeyboard(this)
+                // Prevent input and show progress bar
+                setLoading(this, progressBarView, interactableViews)
+
                 createAccount(username, email, password, passwordConfirm)
             }
 
             // BACK BUTTON
             R.id.register_button_back ->
             {
-                println("DEBUG ${Firebase.auth.currentUser?.email} ${Firebase.auth.currentUser?.displayName}")
+                onBackPressed()
             }
         }
     }
 
+    override fun onBackPressed()
+    {
+        finish()
+        overridePendingTransition(R.anim.slide_in_from_left, R.anim.slide_out_to_right)
+    }
+
     private fun createAccount(username: String, email: String, password: String, password_confirm: String)
     {
-        val fieldViews = listOf(
-            usernameInputLayoutView,
-            emailInputLayoutView,
-            passInputLayoutView,
-            passConfirmInputLayoutView,
-        )
-        // Clear old errors from input fields
-        clearFieldErrors(fieldViews)
-        // Clear focused fields
-        clearFieldFocuses(fieldViews)
-
         // No blank fields or FireBase will throw an IllegalArgument
         // Passwords must match
         if(username.isBlank() || email.isBlank() || password.isBlank() ||
@@ -116,18 +137,16 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener
             {
                 showFieldError(passConfirmInputLayoutView, resources.getString(R.string.login_error_password_not_match))
             }
-            setLoading(false)
+            clearLoading(this, progressBarView, interactableViews)
         }
         else
         {
-            setLoading(true)
+            setLoading(this, progressBarView, interactableViews)
 
             // Create account
             firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener()
             {
                 authResult ->
-                setLoading(false)
-
                 // Account created successfully
                 if(authResult.isSuccessful)
                 {
@@ -135,11 +154,16 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener
                     val displayNameChange = UserProfileChangeRequest.Builder()
                         .setDisplayName(username)
                         .build()
-                    firebaseAuth.currentUser?.updateProfile(displayNameChange)
+                    firebaseAuth.currentUser!!.updateProfile(displayNameChange).addOnCompleteListener()
+                    {
+                        clearLoading(this, progressBarView, interactableViews)
+                        startActivityClear(this, HomeActivity::class.java)
+                    }
                 }
                 else
                 {
                     // Failed to create account
+                    clearLoading(this, progressBarView, interactableViews)
                     when(authResult.exception!!::class)
                     {
                         // https://firebase.google.com/docs/reference/kotlin/com/google/firebase/auth/FirebaseAuth#exceptions_1
@@ -157,42 +181,6 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener
                     }
                 }
             }
-        }
-    }
-
-    private fun showFieldError(view: TextInputLayout, message: String)
-    {
-        view.error = message
-    }
-
-    private fun clearFieldErrors(views: List<TextInputLayout>)
-    {
-        for(view in views)
-        {
-            view.error = null
-        }
-    }
-
-    private fun clearFieldFocuses(views: List<TextInputLayout>)
-    {
-        for(view in views)
-        {
-            view.clearFocus()
-        }
-    }
-
-    private fun setLoading(loading: Boolean)
-    {
-        if(loading)
-        {
-            window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            progressBarView.visibility = View.VISIBLE
-        }
-        else
-        {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            progressBarView.visibility = View.INVISIBLE
         }
     }
 }
