@@ -141,8 +141,6 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener
         }
         else
         {
-            setLoading(this, progressBarView, interactableViews)
-
             // Create account
             firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener()
             {
