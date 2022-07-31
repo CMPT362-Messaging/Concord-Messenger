@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "814845891576",
+    "firebase_url": "https://concord-messenger-default-rtdb.firebaseio.com",
     "project_id": "concord-messenger",
     "storage_bucket": "concord-messenger.appspot.com"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "814845891576-q4hi9qrcqiglfqkbaaica6l00nfm3m2r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.group2.concord_messenger",
+            "certificate_hash": "146320d968261f0964b521231910d4e5d1b49047"
+          }
+        },
         {
           "client_id": "814845891576-umj96alchhti5gp9jfvpu743e6mbjbqm.apps.googleusercontent.com",
           "client_type": 3
