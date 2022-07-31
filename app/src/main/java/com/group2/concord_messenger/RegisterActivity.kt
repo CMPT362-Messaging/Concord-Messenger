@@ -69,7 +69,7 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener
             backButtonView
         )
 
-        firebaseAuth = Firebase.auth
+        firebaseAuth = FirebaseAuth.getInstance()
     }
 
     override fun onClick(view: View?)
