@@ -16,8 +16,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.*
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 
 class LoginActivity : AppCompatActivity(), View.OnClickListener
 {
@@ -143,7 +141,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener
         }
         else
         {
-            Firebase.auth.signInWithEmailAndPassword(email, password).addOnCompleteListener()
+            firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener()
             {
                 authResult ->
                 clearLoading(this, progressBarView, interactableViews)
