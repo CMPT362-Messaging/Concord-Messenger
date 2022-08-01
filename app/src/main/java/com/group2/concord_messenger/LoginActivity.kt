@@ -1,15 +1,11 @@
 package com.group2.concord_messenger
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
@@ -207,10 +203,13 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener
                     firebaseAuth.signInWithCredential(credential).addOnCompleteListener()
                     {
                         authResult ->
-                        clearLoading(this, progressBarView, interactableViews)
                         if(authResult.isSuccessful)
                         {
-                            startActivityClear(this, HomeActivity::class.java)
+                            ConcordDatabase.insertCurrentUser()
+                            {
+                                clearLoading(this, progressBarView, interactableViews)
+                                startActivityClear(this, HomeActivity::class.java)
+                            }
                         }
                         else
                         {

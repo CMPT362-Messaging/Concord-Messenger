@@ -9,8 +9,6 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.*
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 
 class RegisterActivity : AppCompatActivity(), View.OnClickListener
 {
@@ -154,8 +152,11 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener
                         .build()
                     firebaseAuth.currentUser!!.updateProfile(displayNameChange).addOnCompleteListener()
                     {
-                        clearLoading(this, progressBarView, interactableViews)
-                        startActivityClear(this, HomeActivity::class.java)
+                        ConcordDatabase.insertCurrentUser()
+                        {
+                            clearLoading(this, progressBarView, interactableViews)
+                            startActivityClear(this, HomeActivity::class.java)
+                        }
                     }
                 }
                 else
