@@ -72,7 +72,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener
 
         if(firebaseAuth.currentUser != null)
         {
-            startActivityClear(this, HomeActivity::class.java)
+            startActivityClear(this, ChatListActivity::class.java)
         }
     }
 
@@ -148,7 +148,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener
                 // Login successful
                 if(authResult.isSuccessful)
                 {
-                    startActivityClear(this, HomeActivity::class.java)
+                    startActivityClear(this, ChatListActivity::class.java)
                 }
                 else
                 {
@@ -206,7 +206,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener
                             ConcordDatabase.insertCurrentUser()
                             {
                                 clearLoading(this, progressBarView, interactableViews)
-                                startActivityClear(this, HomeActivity::class.java)
+                                startActivityClear(this, ChatListActivity::class.java)
                             }
                         }
                         else

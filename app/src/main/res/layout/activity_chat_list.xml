@@ -6,6 +6,28 @@
     android:layout_height="match_parent"
     tools:context=".ChatListActivity">
 
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/layout_chat_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_chat_list"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:textAlignment="textEnd"
+            android:theme="@style/Widget.AppCompat.Toolbar"
+            app:popupTheme="@style/Theme.AppCompat.Light"
+            app:title="@string/app_name"
+            app:titleMargin="14dp"
+            app:titleTextColor="#FFFFFF">
+
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

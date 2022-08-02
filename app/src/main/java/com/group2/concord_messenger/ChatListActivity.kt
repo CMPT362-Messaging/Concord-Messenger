@@ -1,6 +1,5 @@
 package com.group2.concord_messenger
 
-import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ContentValues
@@ -9,19 +8,19 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.auth.api.signin.*
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.auth.AuthCredential
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
 import com.google.firebase.messaging.FirebaseMessaging
-import com.group2.concord_messenger.databinding.ActivityChatListBinding
 import com.group2.concord_messenger.model.UserProfile
 
 
@@ -29,24 +28,21 @@ class ChatListActivity : AppCompatActivity() {
     // The Firestore database where all messages will be added
     private lateinit var fsDb: FirebaseFirestore
     private lateinit var firebaseAuth: FirebaseAuth
-    private var googleAccount: GoogleSignInAccount? = null
     private var fromUser: UserProfile? = null
     private var userId: String? = null
-    private var idToken: String? = null
     private var name: String? = null
     private var email: String? = null
-    private lateinit var credential: AuthCredential
     private lateinit var chatsListView: ListView
     private var chatListAdapter: ArrayAdapter<String>? = null
-
-    private lateinit var binding: ActivityChatListBinding
+    private lateinit var fab: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        binding = ActivityChatListBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_chat_list)
         firebaseAuth = FirebaseAuth.getInstance()
+        val toolbar = findViewById<Toolbar>(R.id.toolbar_chat_list)
+        setSupportActionBar(toolbar)
+        fab = findViewById(R.id.fab)
 
         // TODO: Notifications
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -79,93 +75,16 @@ class ChatListActivity : AppCompatActivity() {
 
         chatsListView = findViewById(R.id.current_chats_listView)
 
-        // Now begins a chain of asynchronous calls
-        // Authenticate user -> insert user into db/update user ->
-        // -> show current chats associated with this user -> enable ability to make new chats
+        ConcordDatabase.getCurrentUser {
+            fromUser = it!!
+            userId = fromUser!!.uId
+            email = fromUser!!.email
+            name = fromUser!!.userName
 
-        // Sign the user in using their Google account
-        authenticate()
-    }
-
-    private fun authenticate() {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.web_client_id))
-            .requestEmail()
-            .build()
-
-        val googleSignInClient = GoogleSignIn.getClient(this, gso)
-
-        // Callback
-        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
-            if (it.resultCode == Activity.RESULT_OK) {
-                val data: Intent? = it.data
-                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-                if (task.isSuccessful) {
-                    googleAccount = task.result
-                    userId = googleAccount!!.id
-                    idToken = googleAccount!!.idToken
-                    name = googleAccount!!.displayName
-                    email = googleAccount!!.email
-                    credential = GoogleAuthProvider.getCredential(idToken, null)
-                    firebaseAuth.signInWithCredential(credential)
-                        .addOnCompleteListener(OnCompleteListener { authResult ->
-                            if (authResult.isSuccessful) {
-                                Log.println(Log.DEBUG, "Chat", "resultLauncher: Credential login successful")
-                                val user = hashMapOf(
-                                    "tokenId" to idToken,
-                                    "name" to name,
-                                    "email" to email
-                                )
-                                // User has been authenticated, now safe to insert this user
-                                // into the Firestore db
-                                insertThisUser()
-                            } else {
-                                Log.println(Log.DEBUG, "Chat", "resultLauncher: Credential login failed")
-                                authResult.exception?.printStackTrace()
-                            }
-                        })
-                }
-            }
-        }
-
-        // Execute callback
-        resultLauncher.launch(googleSignInClient.signInIntent)
-        userId = GoogleSignIn.getLastSignedInAccount(this)?.id
-    }
-
-    private fun insertThisUser() {
-        val db = FirebaseFirestore.getInstance()
-        val userRef = db.collection("users").document(userId!!)
-        userRef.get().addOnCompleteListener {
-            if (it.isSuccessful && it.result.exists()) {
-                val doc = it.result
-                fromUser = doc.toObject(UserProfile::class.java)
-                println("retrieved current user from db")
-                if (fromUser!!.groups != null) {
-                    println("There was historical data: ${fromUser!!.groups!!.size}")
-                }
-            } else {
-                // User does not already exist, make a new user and insert them
-                println("No historical data to retrieve")
-                fromUser = UserProfile(
-                    userId!!,
-                    name!!,
-                    idToken!!,
-                    null,
-                    email!!
-                )
-                db.collection("users").document(fromUser!!.uId)
-                    .set(fromUser!!, SetOptions.merge())
-                    .addOnSuccessListener {
-                        Log.d(ContentValues.TAG, "DocumentSnapshot successfully written!")
-                    }
-                    .addOnFailureListener { e -> Log.w(ContentValues.TAG, "Error writing document", e) }
-            }
-            // Now safe to show chats associated with the current user
+            // User info gathered, show chats associated with the current user
             showCurrentChats()
-
             // Now safe to enable the FAB to create a new chat
-            binding.fab.setOnClickListener { view ->
+            fab.setOnClickListener { view ->
                 val intent = Intent(this, ContactsActivity::class.java)
                 startActivity(intent)
             }
@@ -220,5 +139,25 @@ class ChatListActivity : AppCompatActivity() {
             intent.putExtra("roomId", groupsList[position])
             startActivity(intent)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.chat_list_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        firebaseAuth.signOut()
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.web_client_id))
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(this, gso).signOut()
+
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        return true
     }
 }

@@ -155,7 +155,7 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener
                         ConcordDatabase.insertCurrentUser()
                         {
                             clearLoading(this, progressBarView, interactableViews)
-                            startActivityClear(this, HomeActivity::class.java)
+                            startActivityClear(this, ChatListActivity::class.java)
                         }
                     }
                 }
