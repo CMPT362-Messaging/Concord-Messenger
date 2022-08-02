@@ -37,7 +37,16 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+
+        // Launch ChatListActivity if the user is already logged in
+        firebaseAuth = FirebaseAuth.getInstance()
+        if(firebaseAuth.currentUser != null) {
+            startActivityClear(this, ChatListActivity::class.java)
+            overridePendingTransition(0, 0);
+        } else {
+            // Otherwise load the page
+            setContentView(R.layout.activity_login)
+        }
 
         // Get views
         emailInputLayoutView = findViewById(R.id.login_textlayout_email)
@@ -67,13 +76,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener
             loginGoogleButtonView
         )
 
-        firebaseAuth = FirebaseAuth.getInstance()
         getGoogleLoginResultLauncher()
-
-        if(firebaseAuth.currentUser != null)
-        {
-            startActivityClear(this, ChatListActivity::class.java)
-        }
     }
 
     override fun onClick(view: View?)
