@@ -121,6 +121,7 @@ class ChatListActivity : AppCompatActivity() {
                 for (i in snapshot.documents) {
                     val contact = i.toObject(UserProfile::class.java)
                     if (contact!!.uId != fromUser!!.uId) {
+                        println("Contact name: ${contact.userName}")
                         currentChatNames.add(contact.userName)
                         userList.add(contact)
                         // Document id works as the group id
