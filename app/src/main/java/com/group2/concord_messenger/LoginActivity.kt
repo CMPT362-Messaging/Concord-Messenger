@@ -37,43 +37,48 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
 
-        // Get views
-        emailInputLayoutView = findViewById(R.id.login_textlayout_email)
-        passInputLayoutView = findViewById(R.id.login_textlayout_password)
-        emailInputView = findViewById(R.id.login_edittext_email)
-        passInputView = findViewById(R.id.login_edittext_password)
-        loginButtonView = findViewById(R.id.login_button_login)
-        registerButtonView = findViewById(R.id.login_button_register)
-        loginGoogleButtonView = findViewById(R.id.login_button_login_google)
-        progressBarView = findViewById(R.id.login_progress_bar)
-
-        this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-
-        loginButtonView.setOnClickListener(this)
-        registerButtonView.setOnClickListener(this)
-        loginGoogleButtonView.setOnClickListener(this)
-
-        inputViews = listOf(
-            emailInputLayoutView,
-            passInputLayoutView,
-        )
-        interactableViews = listOf(
-            emailInputLayoutView,
-            passInputLayoutView,
-            loginButtonView,
-            registerButtonView,
-            loginGoogleButtonView
-        )
-
+        // Launch ChatListActivity if the user is already logged in
         firebaseAuth = FirebaseAuth.getInstance()
-        getGoogleLoginResultLauncher()
+        val mAuthStateListener = FirebaseAuth.AuthStateListener {
+            if (it.currentUser != null) {
+                startActivityClear(this, ChatListActivity::class.java)
+                overridePendingTransition(0, 0)
+                finish()
+            } else {
+                // Otherwise load the page
+                setContentView(R.layout.activity_login)
+                // Get views
+                emailInputLayoutView = findViewById(R.id.login_textlayout_email)
+                passInputLayoutView = findViewById(R.id.login_textlayout_password)
+                emailInputView = findViewById(R.id.login_edittext_email)
+                passInputView = findViewById(R.id.login_edittext_password)
+                loginButtonView = findViewById(R.id.login_button_login)
+                registerButtonView = findViewById(R.id.login_button_register)
+                loginGoogleButtonView = findViewById(R.id.login_button_login_google)
+                progressBarView = findViewById(R.id.login_progress_bar)
 
-        if(firebaseAuth.currentUser != null)
-        {
-            startActivityClear(this, HomeActivity::class.java)
+                this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+                loginButtonView.setOnClickListener(this)
+                registerButtonView.setOnClickListener(this)
+                loginGoogleButtonView.setOnClickListener(this)
+
+                inputViews = listOf(
+                    emailInputLayoutView,
+                    passInputLayoutView,
+                )
+                interactableViews = listOf(
+                    emailInputLayoutView,
+                    passInputLayoutView,
+                    loginButtonView,
+                    registerButtonView,
+                    loginGoogleButtonView
+                )
+            }
         }
+        firebaseAuth.addAuthStateListener(mAuthStateListener)
+        getGoogleLoginResultLauncher()
     }
 
     override fun onClick(view: View?)
@@ -148,7 +153,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener
                 // Login successful
                 if(authResult.isSuccessful)
                 {
-                    startActivityClear(this, HomeActivity::class.java)
+                    startActivityClear(this, ChatListActivity::class.java)
                 }
                 else
                 {
@@ -206,7 +211,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener
                             ConcordDatabase.insertCurrentUser()
                             {
                                 clearLoading(this, progressBarView, interactableViews)
-                                startActivityClear(this, HomeActivity::class.java)
+                                startActivityClear(this, ChatListActivity::class.java)
                             }
                         }
                         else

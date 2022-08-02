@@ -18,24 +18,24 @@ import com.group2.concord_messenger.model.UserProfile
 
 class ContactsActivity : AppCompatActivity() {
     private lateinit var fsDb: FirebaseFirestore
-    private var firebaseUser: GoogleSignInAccount? = null
     private lateinit var listView: ListView
-    private lateinit var fromUser: UserProfile
+    private var fromUser: UserProfile? = null
     private lateinit var contactsList: ArrayList<UserProfile>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contacts)
-
-        firebaseUser = GoogleSignIn.getLastSignedInAccount(this)
-
         listView = findViewById(R.id.contacts_listView)
-        populateListView()
+
+        ConcordDatabase.getCurrentUser {
+            fromUser = it
+            populateListView()
+        }
     }
 
     private fun populateListView() {
-        if (firebaseUser != null) {
-            val fromUId = firebaseUser?.id
+        if (fromUser != null) {
+            val fromUId = fromUser?.uId
             fsDb = FirebaseFirestore.getInstance()
             println("Firebase id: $fromUId")
             val uIRef = fsDb.collection("users").document(fromUId!!)
@@ -44,9 +44,9 @@ class ContactsActivity : AppCompatActivity() {
                     val doc = it.result
                     if (doc.exists()) {
                         fromUser = doc.toObject(UserProfile::class.java)!!
-                        println("populateListView: fromUser: ${fromUser.userName}")
-                        if (fromUser.groups != null) {
-                            println("fromUser groups is not null, size: ${fromUser.groups!!.size}")
+                        println("populateListView: fromUser: ${fromUser!!.userName}")
+                        if (fromUser!!.groups != null) {
+                            println("fromUser groups is not null, size: ${fromUser!!.groups!!.size}")
                         } else {
                             println("fromUser's group is null")
                         }
@@ -61,7 +61,7 @@ class ContactsActivity : AppCompatActivity() {
                                 for (i in p.result) {
                                     val contact = i.toObject(UserProfile::class.java)
                                     println("Discovered user: ${contact.userName}")
-                                    if (contact.userName != firebaseUser!!.displayName) {
+                                    if (contact.uId != fromUser!!.uId) {
                                         contactsNames.add(contact.userName)
                                         contactsList.add(contact)
                                         groupsList.add(contact.uId)
