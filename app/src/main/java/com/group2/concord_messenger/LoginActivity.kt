@@ -40,42 +40,44 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener
 
         // Launch ChatListActivity if the user is already logged in
         firebaseAuth = FirebaseAuth.getInstance()
-        if(firebaseAuth.currentUser != null) {
-            startActivityClear(this, ChatListActivity::class.java)
-            overridePendingTransition(0, 0);
-        } else {
-            // Otherwise load the page
-            setContentView(R.layout.activity_login)
+        val mAuthStateListener = FirebaseAuth.AuthStateListener {
+            if (it.currentUser != null) {
+                startActivityClear(this, ChatListActivity::class.java)
+                overridePendingTransition(0, 0)
+                finish()
+            } else {
+                // Otherwise load the page
+                setContentView(R.layout.activity_login)
+                // Get views
+                emailInputLayoutView = findViewById(R.id.login_textlayout_email)
+                passInputLayoutView = findViewById(R.id.login_textlayout_password)
+                emailInputView = findViewById(R.id.login_edittext_email)
+                passInputView = findViewById(R.id.login_edittext_password)
+                loginButtonView = findViewById(R.id.login_button_login)
+                registerButtonView = findViewById(R.id.login_button_register)
+                loginGoogleButtonView = findViewById(R.id.login_button_login_google)
+                progressBarView = findViewById(R.id.login_progress_bar)
+
+                this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+                loginButtonView.setOnClickListener(this)
+                registerButtonView.setOnClickListener(this)
+                loginGoogleButtonView.setOnClickListener(this)
+
+                inputViews = listOf(
+                    emailInputLayoutView,
+                    passInputLayoutView,
+                )
+                interactableViews = listOf(
+                    emailInputLayoutView,
+                    passInputLayoutView,
+                    loginButtonView,
+                    registerButtonView,
+                    loginGoogleButtonView
+                )
+            }
         }
-
-        // Get views
-        emailInputLayoutView = findViewById(R.id.login_textlayout_email)
-        passInputLayoutView = findViewById(R.id.login_textlayout_password)
-        emailInputView = findViewById(R.id.login_edittext_email)
-        passInputView = findViewById(R.id.login_edittext_password)
-        loginButtonView = findViewById(R.id.login_button_login)
-        registerButtonView = findViewById(R.id.login_button_register)
-        loginGoogleButtonView = findViewById(R.id.login_button_login_google)
-        progressBarView = findViewById(R.id.login_progress_bar)
-
-        this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-
-        loginButtonView.setOnClickListener(this)
-        registerButtonView.setOnClickListener(this)
-        loginGoogleButtonView.setOnClickListener(this)
-
-        inputViews = listOf(
-            emailInputLayoutView,
-            passInputLayoutView,
-        )
-        interactableViews = listOf(
-            emailInputLayoutView,
-            passInputLayoutView,
-            loginButtonView,
-            registerButtonView,
-            loginGoogleButtonView
-        )
-
+        firebaseAuth.addAuthStateListener(mAuthStateListener)
         getGoogleLoginResultLauncher()
     }
 
