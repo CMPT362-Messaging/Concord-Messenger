@@ -21,6 +21,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
+import com.group2.concord_messenger.ContactsActivityFolder.ContactsActivity
 import com.group2.concord_messenger.model.UserProfile
 
 

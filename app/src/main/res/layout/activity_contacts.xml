@@ -4,11 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ContactsActivity">
+    tools:context=".ContactsActivityFolder.ContactsActivity">
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/contacts_recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/contacts_listView"/>
+        android:scrollbars="vertical"
+        tools:listitem="@layout/activity_contacts_list_item"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

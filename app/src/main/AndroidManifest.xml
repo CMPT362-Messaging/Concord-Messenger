@@ -22,7 +22,7 @@
             android:name=".HomeActivity"
             android:exported="false" />
         <activity
-            android:name=".ContactsActivity"
+            android:name=".ContactsActivityFolder.ContactsActivity"
             android:exported="false" />
         <activity
             android:name=".ChatActivity"

@@ -1,19 +1,14 @@
-package com.group2.concord_messenger
+package com.group2.concord_messenger.ContactsActivityFolder
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Adapter
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import com.firebase.ui.auth.data.model.User
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthCredential
-import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import com.group2.concord_messenger.ChatActivity
+import com.group2.concord_messenger.ConcordDatabase
+import com.group2.concord_messenger.R
 import com.group2.concord_messenger.model.UserProfile
 
 class ContactsActivity : AppCompatActivity() {
