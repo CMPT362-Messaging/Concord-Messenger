@@ -30,7 +30,7 @@ class AudioDialog : DialogFragment() {
 
 
     interface AudioDialogListener {
-        fun onComplete(dialog: DialogFragment, filename: String)
+        fun onAudioComplete(dialog: DialogFragment, filename: String)
     }
 
     // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
@@ -62,7 +62,7 @@ class AudioDialog : DialogFragment() {
                         recorder = null
                         player?.release()
                         player = null
-                        listener.onComplete(this, fileName)
+                        listener.onAudioComplete(this, fileName)
                     })
                     .setNeutralButton("Cancel",
                         DialogInterface.OnClickListener { dialog, id ->

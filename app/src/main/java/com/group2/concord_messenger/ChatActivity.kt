@@ -1,12 +1,21 @@
 package com.group2.concord_messenger
 
+import android.Manifest
+import android.app.Activity
 import android.content.ContentValues.TAG
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
@@ -14,14 +23,20 @@ import com.google.firebase.auth.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+import com.group2.concord_messenger.dialogs.AudioDialog
 import com.group2.concord_messenger.model.ChatMessageListAdapter
 import com.group2.concord_messenger.model.ConcordMessage
 import com.group2.concord_messenger.model.UserProfile
+import com.group2.concord_messenger.utils.checkPermissions
+import java.io.File
 
 
-class ChatActivity : AppCompatActivity() {
+class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
     private lateinit var editText: EditText
     private lateinit var sendBtn: Button
+    private lateinit var attachButton: Button
     // The Firestore database where all messages will be added
     private lateinit var fsDb: FirebaseFirestore
     private lateinit var firebaseAuth: FirebaseAuth
@@ -42,6 +57,7 @@ class ChatActivity : AppCompatActivity() {
 
         editText = findViewById(R.id.edit_gchat_message)
         sendBtn = findViewById(R.id.button_gchat_send)
+        attachButton = findViewById(R.id.attachment_button)
 
         fromUser = intent.extras?.get("fromUser") as UserProfile
         toUser = intent.extras?.get("toUser") as UserProfile
@@ -50,6 +66,12 @@ class ChatActivity : AppCompatActivity() {
         fromGroups = fromUser.groups
         toGroups = toUser.groups
         groupId = intent.extras?.get("roomId") as String
+
+        attachButton.setOnClickListener {
+            checkPermissions(this)
+            val dia = AudioDialog()
+            dia.show(supportFragmentManager, "audioPicker")
+        }
 
         updateCurrentUser()
     }
@@ -166,5 +188,39 @@ class ChatActivity : AppCompatActivity() {
         if (messageAdapter != null) {
             messageAdapter!!.stopListening()
         }
+    }
+
+    override fun onAudioComplete(dialog: DialogFragment, filename: String) {
+        // TODO upload the file, send the message
+        println("Audio successfully recorded and put into temporary file")
+        // Upload the audio file to Firebase Storage
+        val storage = Firebase.storage
+        val imageRef = storage.reference.child("audio/${filename}")
+
+        imageRef.putFile(FileProvider.getUriForFile(this,
+            "com.group2.concord_messenger",
+            File(filename)))
+        .addOnFailureListener {
+            // Handle unsuccessful uploads
+        }.addOnSuccessListener { taskSnapshot ->
+            // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
+            // ...
+        }
+//        val fsDb = FirebaseFirestore.getInstance()
+//        // only the current user can be updated
+//        fsDb.collection("users").document(FirebaseAuth.getInstance().currentUser!!.uid)
+//            .update("userName", usernameField.text.toString(),
+//                "bio", bioField.text.toString(),
+//                "profileImg", imageRef.toString())
+        Toast.makeText(this, "Uploaded the audio file", Toast.LENGTH_SHORT).show()
+//        MediaPlayer().apply {
+//            try {
+//                setDataSource(fileName)
+//                prepare()
+//                start()
+//            } catch (e: IOException) {
+//                println( "prepare() failed")
+//            }
+//        }
     }
 }
