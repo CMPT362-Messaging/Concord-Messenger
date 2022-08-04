@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <string-array name="pic_options">
+        <item>Open Camera</item>
+        <item>Select from Gallery</item>
+    </string-array>
 </resources>

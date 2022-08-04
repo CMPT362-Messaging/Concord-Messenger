@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.pm.PackageManager
 import android.os.Build
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -49,6 +50,8 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
     private var groupId: String = ""
     private var messageAdapter: ChatMessageListAdapter? = null
 
+    private lateinit var profileButton: Button
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
@@ -74,6 +77,13 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
         }
 
         updateCurrentUser()
+
+        profileButton = findViewById(R.id.profile_button)
+        profileButton.setOnClickListener {
+            val intent = Intent(this, UserProfileActivity::class.java)
+            intent.putExtra("user", toUser)
+            startActivity(intent)
+        }
     }
 
     private fun updateCurrentUser() {
