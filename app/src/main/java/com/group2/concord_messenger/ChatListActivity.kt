@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.ListView
 import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
@@ -35,6 +36,7 @@ class ChatListActivity : AppCompatActivity() {
     private lateinit var chatsListView: ListView
     private var chatListAdapter: ArrayAdapter<String>? = null
     private lateinit var fab: FloatingActionButton
+    private lateinit var profileButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +45,7 @@ class ChatListActivity : AppCompatActivity() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar_chat_list)
         setSupportActionBar(toolbar)
         fab = findViewById(R.id.fab)
+        profileButton = findViewById(R.id.profile_button)
 
         // TODO: Notifications
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -86,6 +89,11 @@ class ChatListActivity : AppCompatActivity() {
             // Now safe to enable the FAB to create a new chat
             fab.setOnClickListener { view ->
                 val intent = Intent(this, ContactsActivity::class.java)
+                startActivity(intent)
+            }
+            profileButton.setOnClickListener{
+                val intent = Intent(this, UserProfileActivity::class.java)
+                intent.putExtra("user", fromUser)
                 startActivity(intent)
             }
         }

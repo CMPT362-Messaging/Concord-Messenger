@@ -10,6 +10,8 @@ class UserProfile(var uId: String = "0",
                   var userName: String="",
                   var groups: MutableMap<String, Any>? = null,
                   var email: String="",
+                  var bio: String="",
+                  var profileImg: String="gs://concord-messenger.appspot.com/images/default-profile-image.png",
                   @ServerTimestamp
                        var createdAt: Date?=null) : Serializable {
                            fun UserProfile() {

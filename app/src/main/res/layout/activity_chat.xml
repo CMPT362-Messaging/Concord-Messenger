@@ -24,7 +24,14 @@
             app:title="Person"
             app:titleMargin="14dp"
             app:titleTextColor="#FFFFFF">
-
+            <Button
+                android:id="@+id/profile_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="15dp"
+                android:text="Profile"
+                />
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
