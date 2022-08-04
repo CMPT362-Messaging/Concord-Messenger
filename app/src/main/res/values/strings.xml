@@ -1,3 +1,31 @@
 <resources>
     <string name="app_name">Concord Messenger</string>
+    <string name="web_client_id">814845891576-umj96alchhti5gp9jfvpu743e6mbjbqm.apps.googleusercontent.com</string>
+    <string name="title_activity_chat_list">ChatListActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+
+    <!-- Login -->
+    <string name="login_login">Login</string>
+    <string name="login_register">Register</string>
+    <string name="login_username">Username</string>
+    <string name="login_email">Email</string>
+    <string name="login_password">Password</string>
+    <string name="login_create_account">Create Account</string>
+    <string name="login_back">Back</string>
+    <string name="login_confirm_password">Confirm Password</string>
+
+    <string name="login_error_empty_field">Field cannot be empty</string>
+    <string name="login_error_password_not_match">Does not match password</string>
+    <string name="login_error_invalid_username">Username is invalid</string>
+    <string name="login_error_invalid_email">Email is invalid</string>
+    <string name="login_error_invalid_password">Password should be at least 6 characters</string>
+    <string name="login_error_account_exists">An account with this email already exists</string>
+    <string name="login_error_wrong_password">Incorrect password</string>
 </resources>
