@@ -1,4 +1,4 @@
-package com.group2.concord_messenger.ui.dialogs
+package com.group2.concord_messenger.dialogs
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -8,7 +8,6 @@ import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import android.widget.ImageButton
 import androidx.fragment.app.DialogFragment
 import com.group2.concord_messenger.R

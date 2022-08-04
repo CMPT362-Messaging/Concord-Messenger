@@ -13,7 +13,7 @@ import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
-import com.group2.concord_messenger.ui.dialogs.AudioDialog
+import com.group2.concord_messenger.dialogs.AudioDialog
 import java.io.IOException
 
 
