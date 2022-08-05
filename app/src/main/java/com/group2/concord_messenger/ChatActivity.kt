@@ -207,6 +207,20 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        if (messageAdapter != null) {
+            messageAdapter!!.stopListening()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (messageAdapter != null) {
+            messageAdapter!!.startListening()
+        }
+    }
+
     override fun onAudioComplete(dialog: DialogFragment, filename: String) {
         val message = ConcordMessage(fromUser.uId, fromUser.userName, editText.text.toString(), true)
         editText.text.clear()

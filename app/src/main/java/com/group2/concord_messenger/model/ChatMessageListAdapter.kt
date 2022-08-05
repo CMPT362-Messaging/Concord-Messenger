@@ -129,6 +129,8 @@ class SentMessageHolder(itemView: View) :
                 }
             }
             playAudio.visibility = View.VISIBLE
+        } else {
+            playAudio.visibility = View.GONE
         }
     }
 }
@@ -191,6 +193,8 @@ class ReceivedMessageHolder(itemView: View) :
                 }
             }
             playAudio.visibility = View.VISIBLE
+        } else {
+            playAudio.visibility = View.GONE
         }
     }
 }
