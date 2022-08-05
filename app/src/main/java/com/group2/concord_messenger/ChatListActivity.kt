@@ -53,13 +53,33 @@ class ChatListActivity : AppCompatActivity() {
                 // User info gathered, show chats associated with the current user
                 showCurrentChats()
                 // Now safe to enable the FAB to create a new chat
-                fab.setOnClickListener { view ->
+                fab.setOnClickListener {
                     val intent = Intent(this, ContactsActivity::class.java)
                     startActivity(intent)
                 }
             } else {
+                // Temporary solution to insert the logged-in user who is authenticated with
+                // Firebase but not in the Concord Messenger database
                 ConcordDatabase.insertCurrentUser { result ->
-                    Log.println(Log.DEBUG, "ChatList new user", "$result")
+                    Log.println(Log.DEBUG, "ChatList", "New user result code: $result")
+                    ConcordDatabase.getCurrentUser { newUser ->
+                        if (newUser != null) {
+                            fromUser = newUser
+                            userId = fromUser!!.uId
+                            email = fromUser!!.email
+                            name = fromUser!!.userName
+
+                            // User info gathered, show chats associated with the current user
+                            showCurrentChats()
+                            // Now safe to enable the FAB to create a new chat
+                            fab.setOnClickListener {
+                                val intent = Intent(this, ContactsActivity::class.java)
+                                startActivity(intent)
+                            }
+                        } else {
+                            Log.d(TAG, "Critical user login failure")
+                        }
+                    }
                 }
             }
         }
