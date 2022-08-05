@@ -56,7 +56,17 @@
             android:id="@+id/layout_gchat_container_other"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="horizontal">
+
+            <!--        TODO Update to be a nice icon, probably a play icon-->
+            <Button
+                android:id="@+id/play_audio_button_other"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:visibility="gone"
+                android:text="Play"
+                />
 
             <TextView
                 android:id="@+id/text_gchat_message_other"

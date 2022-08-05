@@ -1,13 +1,10 @@
 package com.group2.concord_messenger
 
-import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
@@ -17,8 +14,6 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.DialogFragment
 import com.google.firebase.auth.FirebaseAuth
@@ -28,6 +23,7 @@ import com.google.firebase.storage.ktx.storage
 import com.group2.concord_messenger.ConcordDatabase.Companion.getCurrentUser
 import com.group2.concord_messenger.dialogs.PickPhotoFragment
 import com.group2.concord_messenger.model.UserProfile
+import com.group2.concord_messenger.utils.checkPermissions
 import java.io.File
 import java.io.FileDescriptor
 import java.io.FileOutputStream
@@ -212,15 +208,6 @@ class UserProfileActivity : AppCompatActivity(), PickPhotoFragment.PickPhotoList
             takeProfilePhoto()
         } else {
             pickFromGallery()
-        }
-    }
-
-    // https://developer.android.com/training/location/permissions
-    private fun checkPermissions(activity: Activity?) {
-        if (Build.VERSION.SDK_INT < 23) return
-        if (ContextCompat.checkSelfPermission(activity!!, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-            || ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA), 0)
         }
     }
 

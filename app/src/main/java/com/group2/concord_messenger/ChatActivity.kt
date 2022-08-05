@@ -1,10 +1,6 @@
 package com.group2.concord_messenger
 
-import android.Manifest
-import android.app.Activity
 import android.content.ContentValues.TAG
-import android.content.pm.PackageManager
-import android.os.Build
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -13,9 +9,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -32,7 +26,6 @@ import com.group2.concord_messenger.model.ConcordMessage
 import com.group2.concord_messenger.model.UserProfile
 import com.group2.concord_messenger.utils.checkPermissions
 import java.io.File
-
 
 class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
     private lateinit var editText: EditText
@@ -145,7 +138,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
         }
     }
 
-    private fun sendMessage(msg: ConcordMessage) {
+    private fun sendMessage(msg: ConcordMessage, audioFile: File? = null) {
         if (fromGroups == null) {
             fromGroups = mutableMapOf()
         }
@@ -183,7 +176,20 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
         //              |-> message_n
         // Currently a group only holds 2 people
         fsDb.collection("messages").document(groupId)
-            .collection("groupMessages").add(msg)
+            .collection("groupMessages").add(msg).addOnSuccessListener {
+                // Upload the audio file to Firebase Storage
+                if (msg.audio) {
+                    val audioFileName = it.id + ".3gp"  // each message is limited to one audio recording
+                    val storage = Firebase.storage
+                    val imageRef = storage.reference.child("audio/${audioFileName}")
+                    imageRef.putFile(audioFile?.toUri()!!)
+                        .addOnSuccessListener { taskSnapshot ->
+                            // save the audio file in permanent local storage so it doesn't need to be fetched from Firebase everytime the chat is opened
+                            val persistentAudioFile = File(this.filesDir, "audio/${audioFileName}")
+                            audioFile.copyTo(persistentAudioFile)
+                        }
+                }
+            }
     }
 
     override fun onStart() {
@@ -201,27 +207,10 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
     }
 
     override fun onAudioComplete(dialog: DialogFragment, filename: String) {
-        // TODO upload the file, send the message
-        println("Audio successfully recorded and put into temporary file")
-        // Upload the audio file to Firebase Storage
-        val storage = Firebase.storage
-        val imageRef = storage.reference.child("audio/${filename}")
+        val message = ConcordMessage(fromUser.uId, fromUser.userName, editText.text.toString(), true)
+        editText.text.clear()
+        sendMessage(message, File(filename))
 
-        imageRef.putFile(FileProvider.getUriForFile(this,
-            "com.group2.concord_messenger",
-            File(filename)))
-        .addOnFailureListener {
-            // Handle unsuccessful uploads
-        }.addOnSuccessListener { taskSnapshot ->
-            // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
-            // ...
-        }
-//        val fsDb = FirebaseFirestore.getInstance()
-//        // only the current user can be updated
-//        fsDb.collection("users").document(FirebaseAuth.getInstance().currentUser!!.uid)
-//            .update("userName", usernameField.text.toString(),
-//                "bio", bioField.text.toString(),
-//                "profileImg", imageRef.toString())
         Toast.makeText(this, "Uploaded the audio file", Toast.LENGTH_SHORT).show()
 //        MediaPlayer().apply {
 //            try {

@@ -74,7 +74,7 @@ class AudioDialog : DialogFragment() {
                         })
 
             val outputDir: File = requireContext().cacheDir
-            fileName = "${outputDir}/testaudiofile.3gp"
+            fileName = "${outputDir}/temp-audio.3gp"
 
             recordButton = view?.findViewById(R.id.record_button)
             playButton = view?.findViewById(R.id.play_button)
