@@ -1,12 +1,16 @@
 package com.group2.concord_messenger
 
+import android.app.PendingIntent
+import android.app.TaskStackBuilder
 import android.content.ContentValues.TAG
+import android.media.RingtoneManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.NotificationCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
@@ -43,15 +47,42 @@ class ChatActivity : AppCompatActivity() {
         editText = findViewById(R.id.edit_gchat_message)
         sendBtn = findViewById(R.id.button_gchat_send)
 
-        fromUser = intent.extras?.get("fromUser") as UserProfile
-        toUser = intent.extras?.get("toUser") as UserProfile
-        // Set the title of the chat to the toUser's name
-        toolBar.title = toUser.userName
-        fromGroups = fromUser.groups
-        toGroups = toUser.groups
-        groupId = intent.extras?.get("roomId") as String
+        // If ChatActivity is being launched from a notification we will get all message
+        // data from the intent extras
+        val bundle = intent.extras
+        if (bundle?.getString("senderId") != null) {
+            ConcordDatabase.getCurrentUser {
+                if (it != null) {
+                    fromUser = it
+                    val senderId = bundle.getString("senderId")
+                    val senderRef = fsDb.collection("users").document(senderId!!)
+                    senderRef.get().addOnCompleteListener { snap ->
+                        if(snap.isSuccessful && snap.result.exists()) {
+                            toUser = snap.result.toObject(UserProfile::class.java)!!
+                            toolBar.title = toUser.userName
+                            fromGroups = fromUser.groups
+                            toGroups = toUser.groups
+                            groupId = "none"
+                            updateCurrentUser()
+                        }
+                        else {
+                            Log.println(Log.DEBUG, "MyFirebaseMessagingService",
+                                "Query for sender user was not successful")
+                        }
+                    }
+                }
+            }
+        } else {
+            fromUser = intent.extras?.get("fromUser") as UserProfile
+            toUser = intent.extras?.get("toUser") as UserProfile
+            // Set the title of the chat to the toUser's name
+            toolBar.title = toUser.userName
+            fromGroups = fromUser.groups
+            toGroups = toUser.groups
+            groupId = intent.extras?.get("roomId") as String
 
-        updateCurrentUser()
+            updateCurrentUser()
+        }
     }
 
     private fun updateCurrentUser() {
