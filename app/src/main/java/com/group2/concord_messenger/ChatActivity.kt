@@ -43,6 +43,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
     // Id of this chat group (for now this group only has two people)
     private var groupId: String = ""
     private var messageAdapter: ChatMessageListAdapter? = null
+    private lateinit var messageRecycler: RecyclerView
 
     private lateinit var profileButton: Button
 
@@ -123,7 +124,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
             val options = FirestoreRecyclerOptions.Builder<ConcordMessage>()
                 .setQuery(query, ConcordMessage::class.java).build()
 
-            val messageRecycler: RecyclerView = findViewById(R.id.recycler_gchat)
+            messageRecycler = findViewById(R.id.recycler_gchat)
             messageAdapter = ChatMessageListAdapter(fromUser.uId,
                 messageRecycler, options)
             // Add adapter (with messages) to the RecyclerView
@@ -187,7 +188,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
                         .addOnSuccessListener { taskSnapshot ->
                             // save the audio file in permanent local storage so it doesn't need to be fetched from Firebase everytime the chat is opened
                             val persistentAudioFile = File(this.filesDir, "audio/${audioFileName}")
-                            audioFile.copyTo(persistentAudioFile)
+                            audioFile.copyTo(persistentAudioFile, overwrite = true)
                         }
                 }
             }
@@ -196,6 +197,8 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
     override fun onStart() {
         super.onStart()
         if (messageAdapter != null) {
+            messageRecycler.recycledViewPool.clear()
+            messageAdapter!!.notifyDataSetChanged()
             messageAdapter!!.startListening()
         }
     }
@@ -207,19 +210,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        if (messageAdapter != null) {
-            messageAdapter!!.stopListening()
-        }
-    }
 
-    override fun onResume() {
-        super.onResume()
-        if (messageAdapter != null) {
-            messageAdapter!!.startListening()
-        }
-    }
 
     override fun onAudioComplete(dialog: DialogFragment, filename: String) {
         val message = ConcordMessage(fromUser.uId, fromUser.userName, editText.text.toString(), true)
@@ -227,14 +218,5 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
         sendMessage(message, File(filename))
 
         Toast.makeText(this, "Uploaded the audio file", Toast.LENGTH_SHORT).show()
-//        MediaPlayer().apply {
-//            try {
-//                setDataSource(fileName)
-//                prepare()
-//                start()
-//            } catch (e: IOException) {
-//                println( "prepare() failed")
-//            }
-//        }
     }
 }
