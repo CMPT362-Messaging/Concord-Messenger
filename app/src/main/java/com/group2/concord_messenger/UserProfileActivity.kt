@@ -40,7 +40,7 @@ class UserProfileActivity : AppCompatActivity(), PickPhotoFragment.PickPhotoList
     private lateinit var usernameField: EditText
     private lateinit var emailField: EditText
     private lateinit var bioField: EditText
-    private lateinit var editButton: Button
+    private lateinit var editButton: ImageButton
     private lateinit var saveButton: Button
     private lateinit var cancelButton: Button
     private lateinit var changeImageButton: Button
@@ -112,7 +112,6 @@ class UserProfileActivity : AppCompatActivity(), PickPhotoFragment.PickPhotoList
         ){ result: ActivityResult ->
             println(result)
             if(result.resultCode == Activity.RESULT_OK){
-                // TODO: will crash if "OK" in the image is selected while in landscape orientation
                 val parcelFileDescriptor: ParcelFileDescriptor =
                     contentResolver.openFileDescriptor(profileImgUri, "r")!!
                 val fileDescriptor: FileDescriptor = parcelFileDescriptor.fileDescriptor
@@ -126,7 +125,7 @@ class UserProfileActivity : AppCompatActivity(), PickPhotoFragment.PickPhotoList
         galleryResult = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ){ result: ActivityResult ->
-            if(result.resultCode == Activity.RESULT_OK) {
+            if (result.resultCode == Activity.RESULT_OK) {
                 // https://developer.android.com/training/data-storage/shared/documents-files
                 // Copy selected image into the profile image file
                 val parcelFileDescriptor: ParcelFileDescriptor =
@@ -152,23 +151,28 @@ class UserProfileActivity : AppCompatActivity(), PickPhotoFragment.PickPhotoList
                 editButton.visibility = View.VISIBLE
             }
         }
-        profileTitle.text = userData.userName + "'s Profile"
-        usernameField.setText(userData.userName)
-        emailField.setText(userData.email)
-        bioField.setText(userData.bio)
+        // fetch latest copy
+        val fsDb = FirebaseFirestore.getInstance()
+        fsDb.collection("users").document(userData.uId).get()
+            .addOnSuccessListener {
+                userData = it.toObject(UserProfile::class.java)!!
+                println("${userData.uId}, ${userData.bio}, ${userData.profileImg}")
+                profileTitle.text = userData.userName + "'s Profile"
+                usernameField.setText(userData.userName)
+                emailField.setText(userData.email)
+                bioField.setText(userData.bio)
 
-        // Load image from firebase
-        // https://firebase.google.com/docs/storage/android/download-files#kotlin+ktx_2
-        val storage = Firebase.storage
-        // Create a reference to a file from a Google Cloud Storage URI
-        val gsReference = storage.getReferenceFromUrl(userData.profileImg)
-        gsReference.getFile(profileImgUri).addOnSuccessListener {
-            // Local temp file has been created
-            val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, profileImgUri)
-            profileImgView.setImageBitmap(bitmap)
-        }.addOnFailureListener {
-            // Handle any errors
-        }
+                // Load image from firebase
+                // https://firebase.google.com/docs/storage/android/download-files#kotlin+ktx_2
+                val storage = Firebase.storage
+                // Create a reference to a file from a Google Cloud Storage URI
+                val gsReference = storage.getReferenceFromUrl(userData.profileImg)
+                gsReference.getFile(profileImgUri).addOnSuccessListener {
+                    // Local temp file has been created
+                    val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, profileImgUri)
+                    profileImgView.setImageBitmap(bitmap)
+                }
+            }
     }
 
     private fun saveProfile() {

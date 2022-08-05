@@ -4,7 +4,7 @@ import android.media.MediaPlayer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
@@ -77,7 +77,7 @@ class SentMessageHolder(itemView: View) :
     var messageText: TextView
     var dateText: TextView
     var timeText: TextView
-    var playAudio: Button
+    var playAudio: ImageButton
 
     init {
         messageText = itemView.findViewById<View>(R.id.text_gchat_message_me) as TextView
@@ -139,7 +139,7 @@ class ReceivedMessageHolder(itemView: View) :
     var nameText: TextView
     var dateText: TextView
     var timeText: TextView
-    var playAudio: Button
+    var playAudio: ImageButton
 
     init {
         messageText = itemView.findViewById<View>(R.id.text_gchat_message_other) as TextView

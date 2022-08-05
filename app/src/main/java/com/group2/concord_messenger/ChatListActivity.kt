@@ -11,7 +11,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
-import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ListView
 import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
@@ -36,7 +36,7 @@ class ChatListActivity : AppCompatActivity() {
     private lateinit var chatsListView: ListView
     private var chatListAdapter: ArrayAdapter<String>? = null
     private lateinit var fab: FloatingActionButton
-    private lateinit var profileButton: Button
+    private lateinit var profileButton: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -30,7 +31,7 @@ import java.io.File
 class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
     private lateinit var editText: EditText
     private lateinit var sendBtn: Button
-    private lateinit var attachButton: Button
+    private lateinit var attachButton: ImageButton
     // The Firestore database where all messages will be added
     private lateinit var fsDb: FirebaseFirestore
     private lateinit var firebaseAuth: FirebaseAuth

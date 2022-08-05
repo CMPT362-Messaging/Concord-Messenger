@@ -30,7 +30,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:layout_marginEnd="15dp"
-                android:text="Profile"
+                android:text="View Profile"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 />
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
@@ -68,14 +69,14 @@
         app:layout_constraintStart_toStartOf="parent">
 
 <!--        TODO Update to be a nice icon, maybe use a spinner-->
-        <Button
+        <ImageButton
             android:id="@+id/attachment_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_marginStart="10dp"
             android:layout_alignParentStart="true"
-            android:text="Attach"
+            android:src="@drawable/ic_baseline_mic_24"
             />
 
         <EditText
