@@ -152,6 +152,11 @@ class ChatActivity : AppCompatActivity() {
         // Currently a group only holds 2 people
         fsDb.collection("messages").document(groupId)
             .collection("groupMessages").add(msg)
+
+        // Add the message to the receiving user's inbox
+        // A user's inbox is a collection of every message sent to them, used for notifications
+        fsDb.collection("userInbox").document(toUser.uId)
+            .collection("messages").add(msg)
     }
 
     override fun onStart() {

@@ -26,12 +26,14 @@
             android:exported="false" />
         <activity
             android:name=".ChatActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:parentActivityName=".ChatListActivity"/>
         <activity
             android:name=".ChatListActivity"
             android:exported="true"
             android:label="@string/title_activity_chat_list"
-            android:theme="@style/Theme.ConcordMessenger.NoActionBar" />
+            android:theme="@style/Theme.ConcordMessenger.NoActionBar"
+            android:parentActivityName=".LoginActivity"/>
         <activity
             android:name=".LoginActivity"
             android:exported="true">
