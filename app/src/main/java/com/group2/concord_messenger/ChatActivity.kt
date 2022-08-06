@@ -229,7 +229,5 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
         val message = ConcordMessage(fromUser.uId, fromUser.userName, editText.text.toString(), true)
         editText.text.clear()
         sendMessage(message, File(filename))
-
-        Toast.makeText(this, "Uploaded the audio file", Toast.LENGTH_SHORT).show()
     }
 }

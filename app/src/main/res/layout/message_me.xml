@@ -40,7 +40,6 @@
             android:background="#2979FF"
             android:orientation="horizontal">
 
-            <!--        TODO Update to be a nice icon, probably a play icon-->
             <ImageButton
                 android:id="@+id/play_audio_button_me"
                 android:layout_width="wrap_content"
@@ -62,6 +61,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
+                android:saveEnabled="false"
                 android:layout_gravity="center_vertical"
                 android:minWidth="100dp"/>
             <ProgressBar
