@@ -11,6 +11,9 @@ class UserProfile(var uId: String = "0",
                   var groups: MutableMap<String, Any>? = null,
                   var email: String="",
                   var contacts: MutableList<String> = mutableListOf(),
+                  // The firebase token, unique to each instance of the app on every unique
+                  // device
+                  var tokenId: String="",
                   @ServerTimestamp
                        var createdAt: Date?=null) : Serializable {
                            fun UserProfile() {
