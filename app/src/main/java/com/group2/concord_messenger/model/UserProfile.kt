@@ -10,6 +10,7 @@ class UserProfile(var uId: String = "0",
                   var userName: String="",
                   var groups: MutableMap<String, Any>? = null,
                   var email: String="",
+                  var contacts: MutableList<String> = mutableListOf(),
                   @ServerTimestamp
                        var createdAt: Date?=null) : Serializable {
                            fun UserProfile() {

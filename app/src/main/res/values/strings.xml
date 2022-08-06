@@ -28,4 +28,8 @@
     <string name="login_error_invalid_password">Password should be at least 6 characters</string>
     <string name="login_error_account_exists">An account with this email already exists</string>
     <string name="login_error_wrong_password">Incorrect password</string>
+
+    <!-- Contacts -->
+    <string name="contacts_search_hint">Search for a user</string>
+    <string name="contacts_add_contact">Add %s to contacts?</string>
 </resources>
