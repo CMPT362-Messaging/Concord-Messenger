@@ -130,6 +130,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
             // Add adapter (with messages) to the RecyclerView
             messageRecycler.layoutManager = LinearLayoutManager(this)
             messageRecycler.adapter = messageAdapter
+//            messageAdapter!!.setMediaPlayer(mp)
             messageAdapter!!.startListening()
 
             sendBtn.setOnClickListener {
@@ -186,10 +187,22 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
                     val imageRef = storage.reference.child("audio/${audioFileName}")
                     imageRef.putFile(audioFile?.toUri()!!)
                         .addOnSuccessListener { taskSnapshot ->
-                            // save the audio file in permanent local storage so it doesn't need to be fetched from Firebase everytime the chat is opened
-                            val persistentAudioFile = File(this.filesDir, "audio/${audioFileName}")
-                            audioFile.copyTo(persistentAudioFile, overwrite = true)
                         }
+                    // save the audio file in permanent local storage so it doesn't need to be fetched from Firebase everytime the chat is opened
+                    val persistentAudioFile = File(this.filesDir, "audio/${audioFileName}")
+                    // check that audio directory and file do not exist
+                    if (!persistentAudioFile.exists()) {
+                        persistentAudioFile.createNewFile()
+                    }
+                    // check that audio directory and file do not exist
+                    val audioDir = File("${this.filesDir}/audio/")
+                    if (!audioDir.exists()) {
+                        audioDir.mkdir()
+                    }
+                    if (!persistentAudioFile.exists()) {
+                        persistentAudioFile.createNewFile()
+                    }
+                    audioFile.copyTo(persistentAudioFile, overwrite = true)
                 }
             }
     }

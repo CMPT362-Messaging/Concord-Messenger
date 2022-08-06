@@ -15,6 +15,7 @@ import java.io.File
 import java.io.IOException
 
 // TODO: there is no pause.
+// TODO: if this gets cancelled there are major crashing issues
 class AudioDialog : DialogFragment() {
     internal lateinit var listener: AudioDialogListener
 
