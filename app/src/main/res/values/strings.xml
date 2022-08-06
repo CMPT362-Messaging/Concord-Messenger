@@ -30,6 +30,8 @@
     <string name="login_error_wrong_password">Incorrect password</string>
 
     <!-- Contacts -->
+    <string name="contacts_title">Contacts</string>
+    <string name="contacts_add_title">Add contacts</string>
     <string name="contacts_search_hint">Search for a user</string>
     <string name="contacts_confirm_add_contact">Add %s to contacts?</string>
     <string name="contacts_contact_added">Contact added</string>

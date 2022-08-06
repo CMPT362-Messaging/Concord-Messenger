@@ -39,7 +39,7 @@ class ChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
         fsDb = FirebaseFirestore.getInstance()
-        val toolBar = findViewById<Toolbar>(R.id.toolbar_gchannel)
+        val toolBar = findViewById<Toolbar>(R.id.contacts_toolbar)
 
         editText = findViewById(R.id.edit_gchat_message)
         sendBtn = findViewById(R.id.button_gchat_send)
