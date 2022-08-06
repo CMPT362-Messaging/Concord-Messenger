@@ -3,10 +3,7 @@ package com.group2.concord_messenger
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.LinearLayout
-import android.widget.ListView
-import android.widget.ProgressBar
-import android.widget.SearchView
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -59,7 +56,7 @@ class AddContactsActivity : AppCompatActivity(), SearchView.OnQueryTextListener
             _, _, position, _ ->
             // Show an alert dialog asking if the person should be added to contacts
             val dialog = AlertDialog.Builder(this)
-                .setMessage(String.format(resources.getString(R.string.contacts_add_contact),
+                .setMessage(String.format(resources.getString(R.string.contacts_confirm_add_contact),
                     contactList[position].userName))
                 .setPositiveButton("Yes")
                 {
@@ -111,6 +108,9 @@ class AddContactsActivity : AppCompatActivity(), SearchView.OnQueryTextListener
         {
             db.collection("users").document(currentUserProfile.uId)
                 .update("contacts", FieldValue.arrayUnion(uid))
+            Toast.makeText(this,
+                resources.getString(R.string.contacts_contact_added),
+                Toast.LENGTH_SHORT).show()
         }
     }
 

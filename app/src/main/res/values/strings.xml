@@ -31,5 +31,6 @@
 
     <!-- Contacts -->
     <string name="contacts_search_hint">Search for a user</string>
-    <string name="contacts_add_contact">Add %s to contacts?</string>
+    <string name="contacts_confirm_add_contact">Add %s to contacts?</string>
+    <string name="contacts_contact_added">Contact added</string>
 </resources>
