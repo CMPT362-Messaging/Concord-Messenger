@@ -1,16 +1,22 @@
 package com.group2.concord_messenger.model
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.TaskStackBuilder
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.group2.concord_messenger.ChatActivity
+import com.group2.concord_messenger.ConcordDatabase
 import com.group2.concord_messenger.R
 import java.lang.Exception
 
@@ -21,93 +27,69 @@ import java.lang.Exception
  * and following the tutorial in the Firebase documentation:
  * https://firebase.google.com/docs/cloud-messaging/android/client
  */
+@SuppressLint("MissingFirebaseInstanceTokenRefresh")
 class MyFirebaseMessagingService: FirebaseMessagingService() {
 
+    // Receives the remote message sent by our Google Cloud function.
+    // Currently the message will always be processed here as it is sent with the "data" tag,
+    // if sent with the "notification" tag it will be processed automatically, outside of our control
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        // super.onMessageReceived(remoteMessage)
-        // There are two types of messages, i.e., data messages and notification messages.
-        // The data messages are handled here in onMessageReceived, either the app is in the
-        // foreground or background.
-        // The data messages are traditionally used with GCM.
-        // The notification messages are only received here in onMessageReceived when the app is
-        // in the foreground, and if the app is in the background, the automatically generated
-        // notification is displayed.
-        // If the user taps on the notification, they are returned to the app.
-        // Messages containing both notifications and data payloads are treated as
-        // notification messages.
-        // The Firebase console always sends a notification message.
-        // For more see: https://firebase.google.com/docs/cloud-messaging/concept-options
+        // The current user, as a UserProfile, is needed as the ChatActivity will be launched
+        // if the user clicks on the notification.
+        ConcordDatabase.getCurrentUser { usr ->
+            if (usr != null) {
+                // Intent for launching ChatActivity
+                val intent = Intent(this, ChatActivity::class.java)
+                val notifManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // TODO(developer): Handle FCM messages here.
-        Log.d(TAG, "From: ${remoteMessage.from}")
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val channelName = "New notification"
+                    val description = "FCM notification"
+                    val adminChannel = NotificationChannel("admin_channel", channelName,
+                        NotificationManager.IMPORTANCE_HIGH)
+                    adminChannel.description = description
+                    adminChannel.enableLights(true)
+                    adminChannel.lightColor = Color.BLUE
+                    adminChannel.enableVibration(true)
+                    notifManager.createNotificationChannel(adminChannel)
+                }
 
-        // Check if message contains a data payload.
-        remoteMessage.data.isNotEmpty().let {
-            Log.d(TAG, "Message data payload: " + remoteMessage.data)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                val senderId = remoteMessage.data["senderId"]
+                val fsDb = FirebaseFirestore.getInstance()
+                // Find the sender in the database and build a UserProfile for them
+                val senderRef = fsDb.collection("users").document(senderId!!)
+                senderRef.get().addOnCompleteListener {
+                    if(it.isSuccessful && it.result.exists()) {
+                        val sender = it.result.toObject(UserProfile::class.java)
+                        // Add all data to the intent that ChatActivity needs
+                        // roomId of "none" will cause ChatActivity to automatically search for it
+                        intent.putExtra("fromUser", usr)
+                        intent.putExtra("toUser", sender)
+                        intent.putExtra("roomId", "none")
+
+                        val stackBuilder = TaskStackBuilder.create(this)
+                        stackBuilder.addNextIntentWithParentStack(intent)
+                        val pIntent = stackBuilder.getPendingIntent(0,
+                            PendingIntent.FLAG_UPDATE_CURRENT)
+                        // Set the notification settings
+                        val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                        val builder = NotificationCompat.Builder(this, "admin_channel")
+                            .setContentTitle(remoteMessage.data["title"])
+                            .setContentText(remoteMessage.data["body"])
+                            .setSmallIcon(R.drawable.ic_launcher_foreground)
+                            .setAutoCancel(true)
+                            .setSound(soundUri)
+                            .setContentIntent(pIntent)
+                        notifManager.notify(0, builder.build())
+                    }
+                    else {
+                        Log.println(Log.DEBUG, "MyFirebaseMessagingService",
+                            "Query for sender user was not successful")
+                    }
+                }
+            }
         }
-
-        // Check if message contains a notification payload.
-        remoteMessage.notification?.let {
-            Log.d(TAG, "Message Notification Body: ${it.body}")
-            sendNotification(it.body.toString())
-        }
-
-        // Also, if we intend on generating our own notifications as a result of a received FCM
-        // message, here is where that should be initiated. See the send notification method below.
-    }
-
-
-    /**
-     * Called if the FCM registration token is updated. This may occur if the security of
-     * the previous token had been compromised. Note that this is called when the
-     * FCM registration token is initially generated so this is where you would retrieve the token.
-     */
-    override fun onNewToken(token: String) {
-        Log.d(TAG, "Refreshed token: $token")
-
-        // If you want to send messages to this application instance or
-        // manage this apps subscriptions on the server side, send the
-        // FCM registration token to your app server.
-        sendRegistrationToServer(token)
-    }
-
-    private fun scheduleJob() {
-
-    }
-
-    private fun handleNow() {
-
-    }
-
-    private fun sendRegistrationToServer(token: String?) {
-        // TODO: Implement this method to send a token to our app server.
-    }
-
-    private fun sendNotification(messageBody: String) {
-        val intent = Intent(this, ChatActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        val penIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-            PendingIntent.FLAG_ONE_SHOT)
-
-        val channelId = "1"
-        val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(com.google.android.gms.base.R.drawable.common_google_signin_btn_icon_light)
-            .setContentTitle("test message")
-            .setContentText(messageBody)
-            .setAutoCancel(true)
-            .setContentIntent(penIntent)
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        // Since android Oreo notification channel is needed.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId,
-                "Channel human readable title",
-                NotificationManager.IMPORTANCE_DEFAULT)
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        notificationManager.notify(channelId, 1,  notificationBuilder.build())
     }
 
     override fun onMessageSent(msgId: String) {
@@ -123,6 +105,4 @@ class MyFirebaseMessagingService: FirebaseMessagingService() {
     companion object {
         private const val TAG = "MyFirebaseMsgService"
     }
-
-
 }
