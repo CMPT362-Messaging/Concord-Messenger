@@ -1,7 +1,9 @@
 package com.group2.concord_messenger
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -104,6 +106,12 @@ class AddContactsActivity : AppCompatActivity(), SearchView.OnQueryTextListener
     {
         finish()
         overridePendingTransition(R.anim.slide_in_from_left, R.anim.slide_out_to_right)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean
+    {
+        onBackPressed()
+        return super.onOptionsItemSelected(item)
     }
 
     // Add uid to the current user's contact list

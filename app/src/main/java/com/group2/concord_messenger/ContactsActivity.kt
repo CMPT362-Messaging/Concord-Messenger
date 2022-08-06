@@ -46,9 +46,16 @@ class ContactsActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean
     {
-        val intent = Intent(this, AddContactsActivity::class.java)
-        startActivity(intent)
-        overridePendingTransition(R.anim.slide_in_from_right, R.anim.slide_out_to_left)
+        when(item.itemId)
+        {
+            android.R.id.home -> finish()
+            R.id.contacts_toolbar_search ->
+            {
+                val intent = Intent(this, AddContactsActivity::class.java)
+                startActivity(intent)
+                overridePendingTransition(R.anim.slide_in_from_right, R.anim.slide_out_to_left)
+            }
+        }
         return super.onOptionsItemSelected(item)
     }
 
@@ -69,8 +76,8 @@ class ContactsActivity : AppCompatActivity() {
                         } else {
                             println("fromUser's group is null")
                         }
-                        // Get all users so the current user can start a chat with
-                        // any user registered with the app
+
+                        // Get a list of users from the current user's contact list
                         val userContactsRef = fsDb.collection("users")
                         userContactsRef.get().addOnCompleteListener { p ->
                             if (p.isSuccessful) {
@@ -82,6 +89,7 @@ class ContactsActivity : AppCompatActivity() {
                                         contactsList.add(contact)
                                     }
                                 }
+
                                 val adapter = ContactListAdapter(this, contactsList, false)
                                 listView.adapter = adapter
                                 listView.setOnItemClickListener { parent, view, position, id ->
