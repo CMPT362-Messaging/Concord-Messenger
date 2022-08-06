@@ -32,15 +32,14 @@ class ConcordDatabase
                     if(it.isSuccessful && !it.result.exists())
                     {
                         // Get Firebase Cloud Messaging registration token
-                        FirebaseMessaging.getInstance().token.addOnCompleteListener(
-                            OnCompleteListener { task ->
+                        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
                             if (!task.isSuccessful) {
                                 Log.w(ContentValues.TAG,
                                     "Fetching FCM registration token failed", task.exception)
-                                return@OnCompleteListener
+                                insertCurrentUserHandler(STATUS_FAILED)
                             }
-
-                            // Token is unique to current phone and will be reset once the user uninstalls the app
+                            // Token identifies a unique phone, will be removed from account
+                            // when user logs out
                             val token = task.result
                             val userProfile = UserProfile(
                                 uId = firebaseAuth.currentUser!!.uid,
@@ -80,7 +79,22 @@ class ConcordDatabase
                 {
                     if(it.isSuccessful && it.result.exists())
                     {
-                        getCurrentUserHandler(it.result.toObject(UserProfile::class.java))
+                        val user = it.result.toObject(UserProfile::class.java)
+                        // User has token removed when logging out, add it to the database
+                        // now so that the user can receive notifications
+                        FirebaseMessaging.getInstance().token.addOnCompleteListener(
+                            OnCompleteListener { task ->
+                                if (task.isSuccessful && user != null) {
+                                    // Token identifies a unique phone, will be removed from account
+                                    // when user logs out
+                                    val token = task.result
+                                    db.collection("users").document(user.uId)
+                                        .update(mapOf("tokenId" to token))
+                                    Log.println(Log.DEBUG, "getCurrentUser",
+                                        "Updated tokenId for ${user.userName}")
+                                }
+                                getCurrentUserHandler(user)
+                            })
                     }
                     else
                     {

@@ -144,6 +144,11 @@ class ChatListActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         firebaseAuth.signOut()
+        // Remove the user's instance token
+        if (fromUser != null) {
+            fsDb.collection("users").document(fromUser!!.uId)
+                .update(mapOf("tokenId" to ""))
+        }
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.web_client_id))
             .requestEmail()

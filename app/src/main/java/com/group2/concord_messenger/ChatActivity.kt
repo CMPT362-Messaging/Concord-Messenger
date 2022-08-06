@@ -1,16 +1,13 @@
 package com.group2.concord_messenger
 
-import android.app.PendingIntent
-import android.app.TaskStackBuilder
 import android.content.ContentValues.TAG
-import android.media.RingtoneManager
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.app.NotificationCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
@@ -55,6 +52,12 @@ class ChatActivity : AppCompatActivity() {
                 if (it != null) {
                     fromUser = it
                     val senderId = bundle.getString("senderId")
+                    val recipientId = bundle.getString("recipientId")
+                    if (recipientId != fromUser.uId) {
+                        // This message is not for the currently logged in user
+                        // Simply end the activity
+                        finish()
+                    }
                     val senderRef = fsDb.collection("users").document(senderId!!)
                     senderRef.get().addOnCompleteListener { snap ->
                         if(snap.isSuccessful && snap.result.exists()) {
@@ -70,6 +73,12 @@ class ChatActivity : AppCompatActivity() {
                                 "Query for sender user was not successful")
                         }
                     }
+                } else {
+                    // User is not logged in, notification is old
+                    // Take the user to the login page just to be nice
+                    val intent = Intent(this, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
                 }
             }
         } else {
@@ -168,7 +177,7 @@ class ChatActivity : AppCompatActivity() {
         println("sendMessage: toUser groups size ${toUser.groups!!.size}")
         // Write this new data to the db
         fsDb.collection("users").document(toUser.uId)
-            .set(toUser, SetOptions.merge())
+            .update(mapOf("groups" to toGroups))
         fsDb.collection("groups").document(toUser.uId)
             .collection("userGroups").document(groupId).set(fromUser, SetOptions.merge())
 
