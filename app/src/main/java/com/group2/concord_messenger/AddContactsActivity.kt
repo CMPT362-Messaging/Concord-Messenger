@@ -100,6 +100,12 @@ class AddContactsActivity : AppCompatActivity(), SearchView.OnQueryTextListener
         }
     }
 
+    override fun onBackPressed()
+    {
+        finish()
+        overridePendingTransition(R.anim.slide_in_from_left, R.anim.slide_out_to_right)
+    }
+
     // Add uid to the current user's contact list
     private fun addToContacts(uid: String)
     {
