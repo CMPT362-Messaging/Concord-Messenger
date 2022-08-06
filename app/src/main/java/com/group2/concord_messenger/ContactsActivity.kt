@@ -5,18 +5,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Adapter
-import android.widget.ArrayAdapter
 import android.widget.ListView
-import androidx.appcompat.widget.Toolbar
-import com.firebase.ui.auth.data.model.User
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthCredential
-import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import com.group2.concord_messenger.model.ContactListAdapter
 import com.group2.concord_messenger.model.UserProfile
 
 class ContactsActivity : AppCompatActivity() {
@@ -32,6 +23,15 @@ class ContactsActivity : AppCompatActivity() {
 
         listView = findViewById(R.id.contacts_listView)
 
+        ConcordDatabase.getCurrentUser {
+            fromUser = it
+            populateListView()
+        }
+    }
+
+    override fun onResume()
+    {
+        super.onResume()
         ConcordDatabase.getCurrentUser {
             fromUser = it
             populateListView()
@@ -74,20 +74,15 @@ class ContactsActivity : AppCompatActivity() {
                         val userContactsRef = fsDb.collection("users")
                         userContactsRef.get().addOnCompleteListener { p ->
                             if (p.isSuccessful) {
-                                val contactsNames = ArrayList<String>()
                                 contactsList = ArrayList()
-                                val groupsList = ArrayList<String>()
                                 for (i in p.result) {
                                     val contact = i.toObject(UserProfile::class.java)
                                     println("Discovered user: ${contact.userName}")
-                                    if (contact.uId != fromUser!!.uId) {
-                                        contactsNames.add(contact.userName)
+                                    if (fromUser!!.contacts.contains(contact.uId)) {
                                         contactsList.add(contact)
-                                        groupsList.add(contact.uId)
                                     }
                                 }
-                                val adapter = ArrayAdapter(this,
-                                    android.R.layout.simple_list_item_1, android.R.id.text1, contactsNames)
+                                val adapter = ContactListAdapter(this, contactsList, false)
                                 listView.adapter = adapter
                                 listView.setOnItemClickListener { parent, view, position, id ->
                                     val intent = Intent(this, ChatActivity::class.java)
