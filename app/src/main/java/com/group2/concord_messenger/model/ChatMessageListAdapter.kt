@@ -79,7 +79,6 @@ class SentMessageHolder(itemView: View) :
             val timeFormatter = SimpleDateFormat("HH:mm")
             val timeString = timeFormatter.format(message.createdAt!!)
             val dateString = sdf.format(message.createdAt!!)
-            println(message.createdAt!!.toString())
             timeText.text = timeString
             dateText.text = dateString
         }
@@ -109,7 +108,6 @@ class ReceivedMessageHolder(itemView: View) :
             val timeFormatter = SimpleDateFormat("HH:mm")
             val timeString = timeFormatter.format(message.createdAt!!)
             val dateString = sdf.format(message.createdAt!!)
-            println(message.createdAt!!.toString())
             timeText.text = timeString
             dateText.text = dateString
         }
