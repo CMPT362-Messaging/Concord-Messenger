@@ -91,6 +91,10 @@ class ChatAudioPlayer: SeekBar.OnSeekBarChangeListener {
         }
     }
 
+    fun onUnbind() {
+        onComplete()
+    }
+
     override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
         if (p2) {
             messageText.text = "${p0?.max?.minus(p1)} ms"

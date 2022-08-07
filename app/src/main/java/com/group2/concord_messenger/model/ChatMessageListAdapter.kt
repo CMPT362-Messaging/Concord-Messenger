@@ -64,7 +64,7 @@ class ChatMessageListAdapter(private val fromUid: String, private val recyclerVi
         val message: ConcordMessage = getItem(position)
         val messageId: String = snapshots.getSnapshot(position).id
         if (message.fromUid == fromUid) {
-            (holder as SentMessageHolder).bind(message)
+            (holder as SentMessageHolder).bind(message, messageId, audioPlayer, position)
         } else {
             (holder as ReceivedMessageHolder).bind(message, messageId, audioPlayer, position)
         }
@@ -72,8 +72,11 @@ class ChatMessageListAdapter(private val fromUid: String, private val recyclerVi
 
     override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
         super.onViewDetachedFromWindow(holder)
-//        (holder as SentMessageHolder).unbind()
-//        println("This got rejected")
+        if (holder.itemViewType == VIEW_TYPE_MESSAGE_SENT) {
+            (holder as SentMessageHolder).unbind()
+        } else {
+            (holder as ReceivedMessageHolder).unbind()
+        }
     }
 
     override fun stopListening() {
@@ -102,6 +105,7 @@ class SentMessageHolder(itemView: View) :
     var pauseAudio: ImageButton
     var audioSeekBar: SeekBar
     var progressBar: ProgressBar
+    lateinit var ap:ChatAudioPlayer
 
     init {
         messageText = itemView.findViewById<View>(R.id.text_gchat_message_me) as TextView
@@ -114,6 +118,7 @@ class SentMessageHolder(itemView: View) :
     }
 
     fun bind(message: ConcordMessage, messageId: String, ap: ChatAudioPlayer, position:Int) {
+        this.ap = ap
         println("HOLDERPOSITION$position")
         messageText.text = message.text
         if (message.createdAt != null) {
@@ -179,13 +184,14 @@ class SentMessageHolder(itemView: View) :
     }
 
     fun unbind() {
-        // possibly needed to fix the view being recycled and playing in a different area
-//        playAudio.visibility = View.GONE
-//        pauseAudio.visibility = View.GONE
-//        audioSeekBar.visibility = View.GONE
-//        progressBar.visibility = View.GONE
-////        seekBarUpdateJob?.cancel()
-//        audioSeekBar.progress = 0
+        // For now if, to eliminate the error of a audio message playing that gets recycled acting
+        // weird, stop the player on unbind
+        playAudio.visibility = View.GONE
+        pauseAudio.visibility = View.GONE
+        audioSeekBar.visibility = View.GONE
+        progressBar.visibility = View.GONE
+        audioSeekBar.progress = 0
+        ap.onUnbind()
     }
 }
 
@@ -274,5 +280,14 @@ class ReceivedMessageHolder(itemView: View) :
             audioSeekBar.visibility = View.GONE
             progressBar.visibility = View.GONE
         }
+    }
+    fun unbind() {
+        // For now if, to eliminate the error of a audio message playing that gets recycled acting
+        // weird, stop the player on unbind
+        playAudio.visibility = View.GONE
+        pauseAudio.visibility = View.GONE
+        audioSeekBar.visibility = View.GONE
+        progressBar.visibility = View.GONE
+        audioSeekBar.progress = 0
     }
 }

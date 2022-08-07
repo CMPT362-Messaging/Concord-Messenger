@@ -58,21 +58,21 @@ class AudioDialog : DialogFragment() {
             builder.setTitle("Record Audio Message")
                 .setView(view)
                 .setPositiveButton("Send Recording",
-                    DialogInterface.OnClickListener { dialog, id ->
-                        recorder?.release()
-                        recorder = null
-                        player?.release()
-                        player = null
-                        listener.onAudioComplete(this, fileName)
-                    })
-                    .setNeutralButton("Cancel",
                         DialogInterface.OnClickListener { dialog, id ->
-                            // Do nothing
                             recorder?.release()
                             recorder = null
                             player?.release()
                             player = null
+                            listener.onAudioComplete(this, fileName)
                         })
+                .setNeutralButton("Cancel",
+                    DialogInterface.OnClickListener { dialog, id ->
+                        // Do nothing
+                        recorder?.release()
+                        recorder = null
+                        player?.release()
+                        player = null
+                    })
 
             val outputDir: File = requireContext().cacheDir
             fileName = "${outputDir}/temp-audio.3gp"
@@ -138,5 +138,13 @@ class AudioDialog : DialogFragment() {
             // Create the AlertDialog object and return it
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        recorder?.release()
+        recorder = null
+        player?.release()
+        player = null
     }
 }
