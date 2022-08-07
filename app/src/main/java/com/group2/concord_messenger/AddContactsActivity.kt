@@ -151,7 +151,7 @@ class AddContactsActivity : AppCompatActivity(), SearchView.OnQueryTextListener
                     }
                 }
                 // Sort alphabetically
-                contactList.sortWith(compareBy{it.userName})
+                contactList.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER){user -> user.userName})
                 // Update the list view
                 (contactsListView.adapter as ContactListAdapter).notifyDataSetChanged()
             }

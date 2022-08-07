@@ -123,6 +123,7 @@ class ContactsActivity : AppCompatActivity() {
                                     contactsList.add(contact)
                                 }
                             }
+                            contactsList.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER){user -> user.userName})
 
                             val adapter = ContactListAdapter(this, contactsList, contactType)
                             listView.adapter = adapter
