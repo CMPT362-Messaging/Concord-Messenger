@@ -11,7 +11,7 @@ import com.group2.concord_messenger.R
 
 class ContactListAdapter(private val context: Context,
                          var contacts: MutableList<UserProfile>,
-                         var type: Int = 0) : BaseAdapter()
+                         var type: Int = TYPE_NORMAL) : BaseAdapter()
 {
     private lateinit var usernameView: TextView
     private lateinit var profileImageView: ImageView

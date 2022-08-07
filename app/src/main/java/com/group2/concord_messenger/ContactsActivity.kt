@@ -22,6 +22,7 @@ class ContactsActivity : AppCompatActivity() {
     private lateinit var listView: ListView
 
     private var deleteMode = false
+    private var contactType = ContactListAdapter.TYPE_NORMAL
     private lateinit var menuView: Menu
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,14 +78,16 @@ class ContactsActivity : AppCompatActivity() {
                 deleteMode = !deleteMode
                 if(deleteMode)
                 {
+                    contactType = ContactListAdapter.TYPE_REMOVABLE
                     menuView.getItem(0).setIcon(R.drawable.ic_baseline_check_24)
-                    (listView.adapter as ContactListAdapter).type = ContactListAdapter.TYPE_REMOVABLE
+                    (listView.adapter as ContactListAdapter).type = contactType
                     (listView.adapter as ContactListAdapter).notifyDataSetChanged()
                 }
                 else
                 {
+                    contactType = ContactListAdapter.TYPE_NORMAL
                     menuView.getItem(0).setIcon(R.drawable.ic_baseline_delete_outline_24)
-                    (listView.adapter as ContactListAdapter).type = ContactListAdapter.TYPE_NORMAL
+                    (listView.adapter as ContactListAdapter).type = contactType
                     (listView.adapter as ContactListAdapter).notifyDataSetChanged()
                 }
             }
@@ -121,9 +124,7 @@ class ContactsActivity : AppCompatActivity() {
                                 }
                             }
 
-                            val adapter = ContactListAdapter(this,
-                                contactsList,
-                                ContactListAdapter.TYPE_NORMAL)
+                            val adapter = ContactListAdapter(this, contactsList, contactType)
                             listView.adapter = adapter
                             listView.setOnItemClickListener()
                             {
