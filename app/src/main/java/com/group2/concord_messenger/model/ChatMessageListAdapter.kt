@@ -1,6 +1,5 @@
 package com.group2.concord_messenger.model
 
-import android.text.format.DateUtils.formatDateTime
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,11 +7,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
-import com.google.firebase.installations.Utils
 import com.group2.concord_messenger.R
-import org.w3c.dom.Text
 import java.text.SimpleDateFormat
-import java.util.*
 
 class ChatMessageListAdapter(private val fromUid: String, private val recyclerView: RecyclerView,
                              options: FirestoreRecyclerOptions<ConcordMessage>
@@ -77,13 +73,15 @@ class SentMessageHolder(itemView: View) :
 
     fun bind(message: ConcordMessage) {
         messageText.text = message.text
-        // Format time
-        val calendar = Calendar.getInstance()
-        val sdf = SimpleDateFormat("MMM dd")
-        val timeString = "${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}"
-        val dateString = sdf.format(calendar.time)
-        timeText.text = timeString
-        dateText.text = dateString
+        if (message.createdAt != null) {
+            // Format time
+            val sdf = SimpleDateFormat("MMM dd")
+            val timeFormatter = SimpleDateFormat("HH:mm")
+            val timeString = timeFormatter.format(message.createdAt!!)
+            val dateString = sdf.format(message.createdAt!!)
+            timeText.text = timeString
+            dateText.text = dateString
+        }
     }
 }
 
@@ -104,12 +102,14 @@ class ReceivedMessageHolder(itemView: View) :
     fun bind(message: ConcordMessage) {
         messageText.text = message.text
         nameText.text = message.fromName
-        // Format time
-        val calendar = Calendar.getInstance()
-        val sdf = SimpleDateFormat("MMM dd")
-        val timeString = "${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}"
-        val dateString = sdf.format(calendar.time)
-        timeText.text = timeString
-        dateText.text = dateString
+        if (message.createdAt != null) {
+            // Format time
+            val sdf = SimpleDateFormat("MMM dd")
+            val timeFormatter = SimpleDateFormat("HH:mm")
+            val timeString = timeFormatter.format(message.createdAt!!)
+            val dateString = sdf.format(message.createdAt!!)
+            timeText.text = timeString
+            dateText.text = dateString
+        }
     }
 }
