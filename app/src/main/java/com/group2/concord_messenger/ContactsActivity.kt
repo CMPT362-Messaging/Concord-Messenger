@@ -33,6 +33,7 @@ class ContactsActivity : AppCompatActivity() {
 
         fsDb = FirebaseFirestore.getInstance()
 
+        // Update current user whenever there's a change in the db
         ConcordDatabase.getCurrentUser {
             val firebaseAuth = FirebaseAuth.getInstance()
             if(firebaseAuth.currentUser != null)
@@ -51,6 +52,7 @@ class ContactsActivity : AppCompatActivity() {
         }
     }
 
+    // Show delete and search button on the toolbar
     override fun onCreateOptionsMenu(menu: Menu): Boolean
     {
         menuView = menu
@@ -78,6 +80,7 @@ class ContactsActivity : AppCompatActivity() {
                 deleteMode = !deleteMode
                 if(deleteMode)
                 {
+                    // Show remove symbol next to contacts
                     contactType = ContactListAdapter.TYPE_REMOVABLE
                     menuView.getItem(0).setIcon(R.drawable.ic_baseline_check_24)
                     (listView.adapter as ContactListAdapter).type = contactType
@@ -85,6 +88,7 @@ class ContactsActivity : AppCompatActivity() {
                 }
                 else
                 {
+                    // Hide remove symbol next to contacts
                     contactType = ContactListAdapter.TYPE_NORMAL
                     menuView.getItem(0).setIcon(R.drawable.ic_baseline_delete_outline_24)
                     (listView.adapter as ContactListAdapter).type = contactType
@@ -125,22 +129,27 @@ class ContactsActivity : AppCompatActivity() {
                             }
                             contactsList.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER){user -> user.userName})
 
+                            // Create contact list adapter
                             val adapter = ContactListAdapter(this, contactsList, contactType)
                             listView.adapter = adapter
                             listView.setOnItemClickListener()
                             {
                                 _, _, position, _ ->
+                                // Pressing a contact in delete mode
                                 if(deleteMode)
                                 {
+                                    // Ask if the contact should be deleted
                                     val dialog = AlertDialog.Builder(this)
                                         .setMessage(String.format(resources.getString(R.string.contacts_confirm_remove_contact),
                                             adapter.contacts[position].userName))
                                         .setPositiveButton("Yes")
                                         {
+                                            // Yes
                                             _, _ -> removeFromContacts(adapter.contacts[position].uId)
                                         }
                                         .setNegativeButton("No")
                                         {
+                                            // No
                                             _, _ ->
                                         }
                                         .create()
@@ -148,6 +157,7 @@ class ContactsActivity : AppCompatActivity() {
                                 }
                                 else
                                 {
+                                    // Pressing a contact not in delete mode
                                     val intent = Intent(this, ChatActivity::class.java)
                                     intent.putExtra("fromUser", fromUser)
                                     intent.putExtra("toUser", contactsList[position])
