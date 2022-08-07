@@ -11,8 +11,20 @@ import com.group2.concord_messenger.R
 
 class ContactListAdapter(private val context: Context,
                          var contacts: MutableList<UserProfile>,
-                         val showAddButton: Boolean) : BaseAdapter()
+                         var type: Int = 0) : BaseAdapter()
 {
+    private lateinit var usernameView: TextView
+    private lateinit var profileImageView: ImageView
+    private lateinit var addButtonView: ImageView
+    private lateinit var removeButtonView: ImageView
+
+    companion object
+    {
+        const val TYPE_NORMAL = 0
+        const val TYPE_ADDABLE = 1
+        const val TYPE_REMOVABLE = 2
+    }
+
     override fun getCount(): Int
     {
         return contacts.size
@@ -33,22 +45,43 @@ class ContactListAdapter(private val context: Context,
         val inflater = LayoutInflater.from(context)
         val view = inflater.inflate(R.layout.contact, parent, false)
 
-        val usernameView: TextView = view.findViewById(R.id.contact_textview_username)
-        val profileImageView: ImageView = view.findViewById(R.id.contact_imageview_profile_image)
-        val addButtonView: ImageView = view.findViewById(R.id.contact_imageview_plus)
+        usernameView = view.findViewById(R.id.contact_textview_username)
+        profileImageView = view.findViewById(R.id.contact_imageview_profile_image)
+        addButtonView = view.findViewById(R.id.contact_imageview_plus)
+        removeButtonView = view.findViewById(R.id.contact_imageview_minus)
 
         usernameView.text = contacts[position].userName
         //TODO - Load the users profile picture and display it
 
-        if(showAddButton)
-        {
-            addButtonView.visibility = View.VISIBLE
-        }
-        else
-        {
-            addButtonView.visibility = View.INVISIBLE
-        }
+        setContactType(type)
 
         return view
+    }
+
+    private fun setContactType(type: Int)
+    {
+        when(type)
+        {
+            // No buttons
+            0 ->
+            {
+                addButtonView.visibility = View.INVISIBLE
+                removeButtonView.visibility = View.INVISIBLE
+            }
+            // Plus button
+            1 ->
+            {
+                addButtonView.visibility = View.VISIBLE
+                removeButtonView.visibility = View.INVISIBLE
+            }
+            // Minus button
+            2 ->
+            {
+                addButtonView.visibility = View.INVISIBLE
+                removeButtonView.visibility = View.VISIBLE
+            }
+            // Invalid type
+            else -> throw IllegalArgumentException()
+        }
     }
 }

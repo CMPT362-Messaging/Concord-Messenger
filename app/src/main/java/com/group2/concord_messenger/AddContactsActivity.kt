@@ -50,7 +50,7 @@ class AddContactsActivity : AppCompatActivity(), SearchView.OnQueryTextListener
         )
 
         // Attach ContactListAdapter
-        val addContactListAdapter = ContactListAdapter(this, contactList, true)
+        val addContactListAdapter = ContactListAdapter(this, contactList, ContactListAdapter.TYPE_ADDABLE)
         contactsListView.adapter = addContactListAdapter
         contactsListView.setOnItemClickListener()
         {
