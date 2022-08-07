@@ -57,14 +57,54 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
         sendBtn = findViewById(R.id.button_gchat_send)
         attachButton = findViewById(R.id.attachment_button)
 
-        fromUser = intent.extras?.get("fromUser") as UserProfile
-        toUser = intent.extras?.get("toUser") as UserProfile
-        // Set the title of the chat to the toUser's name
-        toolBar.title = toUser.userName
-        fromGroups = fromUser.groups
-        toGroups = toUser.groups
-        groupId = intent.extras?.get("roomId") as String
+        // If ChatActivity is being launched from a notification we will get all message
+        // data from the intent extras
+        val bundle = intent.extras
+        if (bundle?.getString("senderId") != null) {
+            ConcordDatabase.getCurrentUser {
+                if (it != null) {
+                    fromUser = it
+                    val senderId = bundle.getString("senderId")
+                    val recipientId = bundle.getString("recipientId")
+                    if (recipientId != fromUser.uId) {
+                        // This message is not for the currently logged in user
+                        // Simply end the activity
+                        finish()
+                    }
+                    val senderRef = fsDb.collection("users").document(senderId!!)
+                    senderRef.get().addOnCompleteListener { snap ->
+                        if(snap.isSuccessful && snap.result.exists()) {
+                            toUser = snap.result.toObject(UserProfile::class.java)!!
+                            toolBar.title = toUser.userName
+                            fromGroups = fromUser.groups
+                            toGroups = toUser.groups
+                            groupId = "none"
+                            updateCurrentUser()
+                        }
+                        else {
+                            Log.println(Log.DEBUG, "MyFirebaseMessagingService",
+                                "Query for sender user was not successful")
+                        }
+                    }
+                } else {
+                    // User is not logged in, notification is old
+                    // Take the user to the login page just to be nice
+                    val intent = Intent(this, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                }
+            }
+        } else {
+            fromUser = intent.extras?.get("fromUser") as UserProfile
+            toUser = intent.extras?.get("toUser") as UserProfile
+            // Set the title of the chat to the toUser's name
+            toolBar.title = toUser.userName
+            fromGroups = fromUser.groups
+            toGroups = toUser.groups
+            groupId = intent.extras?.get("roomId") as String
 
+            updateCurrentUser()
+        }
         attachButton.setOnClickListener {
             checkPermissions(this)
             val dia = AudioDialog()
@@ -165,7 +205,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
         println("sendMessage: toUser groups size ${toUser.groups!!.size}")
         // Write this new data to the db
         fsDb.collection("users").document(toUser.uId)
-            .set(toUser, SetOptions.merge())
+            .update(mapOf("groups" to toGroups))
         fsDb.collection("groups").document(toUser.uId)
             .collection("userGroups").document(groupId).set(fromUser, SetOptions.merge())
 
@@ -205,6 +245,11 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
                     audioFile.copyTo(persistentAudioFile, overwrite = true)
                 }
             }
+        // Add the message to the receiving user's inbox
+        // A user's inbox is a collection of every message sent to them, used for notifications
+        fsDb.collection("userInbox").document(toUser.uId)
+            .collection("messages").add(msg)
+
     }
 
     override fun onStart() {
@@ -222,8 +267,6 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
             messageAdapter!!.stopListening()
         }
     }
-
-
 
     override fun onAudioComplete(dialog: DialogFragment, filename: String) {
         val message = ConcordMessage(fromUser.uId, fromUser.userName, editText.text.toString(), true)

@@ -18,7 +18,6 @@ import com.group2.concord_messenger.ChatAudioPlayer
 import com.group2.concord_messenger.R
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
 
 const val FIREBASE_STORAGE_AUDIO_REPO = "gs://concord-messenger.appspot.com/audio/"
 
@@ -65,7 +64,7 @@ class ChatMessageListAdapter(private val fromUid: String, private val recyclerVi
         val message: ConcordMessage = getItem(position)
         val messageId: String = snapshots.getSnapshot(position).id
         if (message.fromUid == fromUid) {
-            (holder as SentMessageHolder).bind(message, messageId, audioPlayer, position)
+            (holder as SentMessageHolder).bind(message)
         } else {
             (holder as ReceivedMessageHolder).bind(message, messageId, audioPlayer, position)
         }
@@ -117,14 +116,15 @@ class SentMessageHolder(itemView: View) :
     fun bind(message: ConcordMessage, messageId: String, ap: ChatAudioPlayer, position:Int) {
         println("HOLDERPOSITION$position")
         messageText.text = message.text
-        // Format time
-        val calendar = Calendar.getInstance()
-        val sdf = SimpleDateFormat("MMM dd")
-        val timeString = "${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}"
-        val dateString = sdf.format(calendar.time)
-        timeText.text = timeString
-        dateText.text = dateString
-
+        if (message.createdAt != null) {
+            // Format time
+            val sdf = SimpleDateFormat("MMM dd")
+            val timeFormatter = SimpleDateFormat("HH:mm")
+            val timeString = timeFormatter.format(message.createdAt!!)
+            val dateString = sdf.format(message.createdAt!!)
+            timeText.text = timeString
+            dateText.text = dateString
+        }
         // TODO: extract this into its own helper function?
         if (message.audio) {
             // if audio file is not saved locally fetch from Firebase and save locally
@@ -214,13 +214,15 @@ class ReceivedMessageHolder(itemView: View) :
     fun bind(message: ConcordMessage, messageId: String, ap: ChatAudioPlayer, position: Int) {
         messageText.text = message.text
         nameText.text = message.fromName
-        // Format time
-        val calendar = Calendar.getInstance()
-        val sdf = SimpleDateFormat("MMM dd")
-        val timeString = "${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}"
-        val dateString = sdf.format(calendar.time)
-        timeText.text = timeString
-        dateText.text = dateString
+        if (message.createdAt != null) {
+            // Format time
+            val sdf = SimpleDateFormat("MMM dd")
+            val timeFormatter = SimpleDateFormat("HH:mm")
+            val timeString = timeFormatter.format(message.createdAt!!)
+            val dateString = sdf.format(message.createdAt!!)
+            timeText.text = timeString
+            dateText.text = dateString
+        }
 
         if (message.audio) {
             // if audio file is not saved locally fetch from Firebase and save locally
