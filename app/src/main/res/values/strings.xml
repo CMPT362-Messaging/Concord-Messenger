@@ -35,4 +35,6 @@
     <string name="contacts_search_hint">Search for a user</string>
     <string name="contacts_confirm_add_contact">Add %s to contacts?</string>
     <string name="contacts_contact_added">Contact added</string>
+    <string name="contacts_confirm_remove_contact">Remove %s from contacts?</string>
+    <string name="contacts_contact_removed">Contact removed</string>
 </resources>
