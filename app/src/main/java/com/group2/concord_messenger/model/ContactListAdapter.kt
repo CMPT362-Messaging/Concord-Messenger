@@ -22,25 +22,25 @@ class ContactListAdapter(private val context: Context,
                          var contacts: MutableList<UserProfile>,
                          var type: Int = TYPE_NORMAL) : BaseAdapter()
 {
-    private val DEFAULT_PROFILE_IMAGE = "gs://concord-messenger.appspot.com/images/default-profile-image.png"
-    private val MAX_CACHED_IMAGES = 32
-
     private lateinit var addButtonView: ImageView
     private lateinit var removeButtonView: ImageView
-
-    private var imgCache: LruCache<String, Bitmap> = object : LruCache<String, Bitmap>(4096 * MAX_CACHED_IMAGES)
-    {
-        override fun sizeOf(key: String, bitmap: Bitmap): Int
-        {
-            return bitmap.byteCount
-        }
-    }
 
     companion object
     {
         const val TYPE_NORMAL = 0
         const val TYPE_ADDABLE = 1
         const val TYPE_REMOVABLE = 2
+
+        const val DEFAULT_PROFILE_IMAGE = "gs://concord-messenger.appspot.com/images/default-profile-image.png"
+        const val MAX_CACHED_IMAGES = 32
+
+        var imgCache: LruCache<String, Bitmap> = object : LruCache<String, Bitmap>(4096 * MAX_CACHED_IMAGES)
+        {
+            override fun sizeOf(key: String, bitmap: Bitmap): Int
+            {
+                return bitmap.byteCount
+            }
+        }
     }
 
     override fun getCount(): Int
