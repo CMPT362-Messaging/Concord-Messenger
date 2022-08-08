@@ -153,7 +153,7 @@ class SentMessageHolder(itemView: View) :
                     val metaData  = MediaMetadataRetriever()
                     metaData.setDataSource(audioFile.toString())
                     val durationMs = metaData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                    messageText.text = "$durationMs ms"
+                    messageText.text = "%.2f s".format((durationMs?.toInt()?.div(1000.0)))
                     metaData.release()
                     audioSeekBar.max = durationMs!!.toInt()
                 }
@@ -280,7 +280,7 @@ class ReceivedMessageHolder(itemView: View) :
                     val metaData  = MediaMetadataRetriever()
                     metaData.setDataSource(audioFile.toString())
                     val durationMs = metaData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                    messageText.text = "$durationMs ms"
+                    messageText.text = "%.2f s".format((durationMs?.toInt()?.div(1000.0)))
                     metaData.release()
                     audioSeekBar.max = durationMs!!.toInt()
                 }
