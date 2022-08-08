@@ -33,6 +33,10 @@
             android:theme="@style/Theme.ConcordMessenger.NoActionBar"
             android:exported="false" />
         <activity
+            android:name=".AddContactsActivity"
+            android:exported="false"
+            android:parentActivityName=".ContactsActivity"/>
+        <activity
             android:name=".RegisterActivity"
             android:exported="false"
             android:parentActivityName=".LoginActivity"/>
