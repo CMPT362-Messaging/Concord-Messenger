@@ -139,7 +139,6 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
                 }
             }
 
-        updateCurrentUser()
 
         profileButton = findViewById(R.id.profile_button)
         profileButton.setOnClickListener {
