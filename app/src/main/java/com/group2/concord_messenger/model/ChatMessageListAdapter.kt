@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.media.ExifInterface
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.view.LayoutInflater
@@ -19,6 +20,7 @@ import com.google.firebase.storage.ktx.storage
 import com.group2.concord_messenger.ChatAudioPlayer
 import com.group2.concord_messenger.R
 import java.io.File
+import java.io.IOException
 import java.text.SimpleDateFormat
 
 const val FIREBASE_STORAGE_AUDIO_REPO = "gs://concord-messenger.appspot.com/audio/"
@@ -192,7 +194,7 @@ class SentMessageHolder(itemView: View) :
             gsReference.getFile(imageFile.toUri()).addOnSuccessListener {
                 println("Image File Downloaded")
                 println("${messageId}.jpg")
-                val bitmap = getBitmap(itemView.context, imageFile.toUri())
+                val bitmap = getBitmap(itemView.context, imageFile.toUri(), imageFile.path)
                 image.setImageBitmap(bitmap)
                 image.visibility = View.VISIBLE
                 progressBar.visibility = View.GONE
@@ -218,9 +220,22 @@ class SentMessageHolder(itemView: View) :
         ap.onUnbind()
     }
 
-    fun getBitmap(context: Context, imgUri: Uri): Bitmap {
+    fun getBitmap(context: Context, imgUri: Uri, imgPath: String): Bitmap {
         val bitmap = BitmapFactory.decodeStream(context.contentResolver.openInputStream(imgUri))
         val matrix = Matrix()
+        var rotate = 0f
+        try {
+            val exif = ExifInterface(imgPath)
+            val orientation: String? = exif.getAttribute(ExifInterface.TAG_ORIENTATION)
+            when(orientation) {
+                "6" -> rotate = 90f
+                "8" -> rotate = 270f
+                "3" -> rotate = 180f
+            }
+        } catch(e: IOException) {
+            e.printStackTrace()
+        }
+        matrix.setRotate(rotate)
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 }
@@ -320,7 +335,7 @@ class ReceivedMessageHolder(itemView: View) :
             gsReference.getFile(imageFile.toUri()).addOnSuccessListener {
                 println("Image File Downloaded")
                 println("${messageId}.jpg")
-                val bitmap = getBitmap(itemView.context, imageFile.toUri())
+                val bitmap = getBitmap(itemView.context, imageFile.toUri(), imageFile.path)
                 image.setImageBitmap(bitmap)
                 image.visibility = View.VISIBLE
                 progressBar.visibility = View.GONE
@@ -345,9 +360,22 @@ class ReceivedMessageHolder(itemView: View) :
         audioSeekBar.progress = 0
     }
 
-    fun getBitmap(context: Context, imgUri: Uri): Bitmap {
+    fun getBitmap(context: Context, imgUri: Uri, imgPath: String): Bitmap {
         val bitmap = BitmapFactory.decodeStream(context.contentResolver.openInputStream(imgUri))
         val matrix = Matrix()
+        var rotate = 0f
+        try {
+            val exif = ExifInterface(imgPath)
+            val orientation: String? = exif.getAttribute(ExifInterface.TAG_ORIENTATION)
+            when(orientation) {
+                "6" -> rotate = 90f
+                "8" -> rotate = 270f
+                "3" -> rotate = 180f
+            }
+        } catch(e: IOException) {
+            e.printStackTrace()
+        }
+        matrix.setRotate(rotate)
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 }
