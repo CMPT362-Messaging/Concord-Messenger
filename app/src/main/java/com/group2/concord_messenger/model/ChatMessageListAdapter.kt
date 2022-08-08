@@ -20,7 +20,6 @@ import com.group2.concord_messenger.utils.getBitmap
 import java.io.File
 import java.text.SimpleDateFormat
 
-// TODO: update the "Enter Message" size to account for the new attachment button
 class ChatMessageListAdapter(private val fromUid: String, private val recyclerView: RecyclerView,
                              options: FirestoreRecyclerOptions<ConcordMessage>
 ) : FirestoreRecyclerAdapter<ConcordMessage, RecyclerView.ViewHolder>(options) {

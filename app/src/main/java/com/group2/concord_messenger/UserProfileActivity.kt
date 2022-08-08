@@ -97,7 +97,6 @@ class UserProfileActivity : AppCompatActivity(), PickPhotoFragment.PickPhotoList
             saveButton.visibility = View.VISIBLE
             cancelButton.visibility = View.VISIBLE
             usernameField.isEnabled = true
-            // TODO: should the email be updatable?
             bioField.isEnabled = true
         }
 
