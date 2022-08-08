@@ -9,9 +9,21 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/contacts_recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="600dp"
         android:scrollbars="vertical"
-        tools:listitem="@layout/activity_contacts_list_item"/>
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@layout/activity_contacts_list_item" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="36dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@color/white"
+        android:text="Create Chat"
+        android:id="@+id/submitButton"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

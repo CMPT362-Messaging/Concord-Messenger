@@ -28,6 +28,9 @@
             android:name=".ChatActivity"
             android:exported="true" />
         <activity
+            android:name=".GroupChatActivity"
+            android:exported="true" />
+        <activity
             android:name=".ChatListActivity"
             android:exported="true"
             android:label="@string/title_activity_chat_list"
