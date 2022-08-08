@@ -35,7 +35,7 @@
         <activity
             android:name=".AddContactsActivity"
             android:exported="false"
-            android:parentActivityName=".ContactsActivity"/>
+            android:parentActivityName=".ContactsActivityFolder.ContactsActivity"/>
         <activity
             android:name=".RegisterActivity"
             android:exported="false"

@@ -4,21 +4,18 @@ import android.content.Intent
 import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
-import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.auth.data.model.User
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import com.group2.concord_messenger.*
-import com.group2.concord_messenger.model.ContactListAdapter
+import com.group2.concord_messenger.ChatActivity
+import com.group2.concord_messenger.ConcordDatabase
+import com.group2.concord_messenger.GroupChatActivity
+import com.group2.concord_messenger.R
 import com.group2.concord_messenger.model.UserProfile
 import java.lang.Thread.sleep
 
@@ -37,46 +34,21 @@ class ContactsActivity : AppCompatActivity() {
 
     private lateinit var submitButton: Button
 
-    private lateinit var menuView: Menu
-
-    private var deleteMode = false
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contacts)
         recyclerView = findViewById(R.id.contacts_recyclerView)
 
-
-        fsDb = FirebaseFirestore.getInstance()
-
-        // Update current user whenever there's a change in the db
         ConcordDatabase.getCurrentUser {
-            val firebaseAuth = FirebaseAuth.getInstance()
-            if (firebaseAuth.currentUser != null) {
-                val userRef = fsDb.collection("users").document(firebaseAuth.currentUser!!.uid)
-                userRef.addSnapshotListener()
-                { snapshot, _ ->
-                    if (snapshot != null && snapshot.exists()) {
-                        fromUser = snapshot.toObject(UserProfile::class.java)!!
-                        populateListView()
-                    }
-                }
-            }
+            fromUser = it
+            populateListView()
         }
 
-        setupSubmitButton()
-    }
-
-
-
-    private fun setupSubmitButton() {
         /*
-when the user clicks the submit button, there are 4 things that could happen. the
-user selects 1 other user, the user selected multiple other users,  the user selects a group,
-or the user selects nothing. Each of these cases will be dealt with separately.
-
- */
+        when the user clicks the submit button, there are 4 things that could happen. the
+        user selects 1 other user, the user selected multiple other users,  the user selects a group,
+        or the user selects nothing. Each of these cases will be dealt with separately.
+         */
         submitButton = findViewById(R.id.submitButton)
         submitButton.setOnClickListener {
 
@@ -125,44 +97,6 @@ or the user selects nothing. Each of these cases will be dealt with separately.
                 }
             }
         }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuView = menu
-        menuInflater.inflate(R.menu.contacts_delete, menu)
-        menuInflater.inflate(R.menu.contacts_search, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            // Back button
-            android.R.id.home -> finish()
-            // Search button
-            R.id.contacts_toolbar_search -> {
-                val intent = Intent(this, AddContactsActivity::class.java)
-                startActivity(intent)
-                overridePendingTransition(R.anim.slide_in_from_right, R.anim.slide_out_to_left)
-            }
-            // Delete button
-            R.id.contacts_toolbar_delete -> {
-                deleteMode = !deleteMode
-                if (deleteMode) {
-                    // Show remove symbol next to contacts
-                    contactType = ContactListAdapter.TYPE_REMOVABLE
-                    menuView.getItem(0).setIcon(R.drawable.ic_baseline_check_24)
-                    (listView.adapter as ContactListAdapter).type = contactType
-                    (listView.adapter as ContactListAdapter).notifyDataSetChanged()
-                } else {
-                    // Hide remove symbol next to contacts
-                    contactType = ContactListAdapter.TYPE_NORMAL
-                    menuView.getItem(0).setIcon(R.drawable.ic_baseline_delete_outline_24)
-                    (listView.adapter as ContactListAdapter).type = contactType
-                    (listView.adapter as ContactListAdapter).notifyDataSetChanged()
-                }
-            }
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     private fun createGroup(selectedUsers: ArrayList<UserProfile>): String {
@@ -269,32 +203,35 @@ or the user selects nothing. Each of these cases will be dealt with separately.
                                         contactsList.add(contact)
                                         contactsDataList.add(contactsData)
                                     }
-                                    if (fromUser!!.groups != null) {
-                                        println("fromUser groups is not null, size: ${fromUser!!.groups!!.size}")
-                                        //get all groups and add to contacts data
-                                    } else {
-                                        println("fromUser's group is null")
-                                    }
+
                                     val adapter = ContactsActivityAdapter(contactsDataList)
                                     recyclerView.adapter = adapter
                                     recyclerView.layoutManager = LinearLayoutManager(this)
                                 }
-                                for ((key, value) in fromUser!!.groups!!) {
-                                    if (fromUser!!.groups!![key] == true) {
-                                        contactsDataList.add(
-                                            ContactsData(
-                                                key,
-                                                false,
-                                                Bitmap.createBitmap(
-                                                    100,
-                                                    100,
-                                                    Bitmap.Config.ARGB_8888
-                                                ),
-                                                ContactsActivityAdapter.VIEW_TYPE_GROUP, ""
+
+                                //add all groups to contact data if there are any groups
+                                if (fromUser!!.groups != null) {
+                                    for ((key, value) in fromUser!!.groups!!) {
+                                        if (fromUser!!.groups!![key] == true) {
+                                            contactsDataList.add(
+                                                ContactsData(
+                                                    key,
+                                                    false,
+                                                    Bitmap.createBitmap(
+                                                        100,
+                                                        100,
+                                                        Bitmap.Config.ARGB_8888
+                                                    ),
+                                                    ContactsActivityAdapter.VIEW_TYPE_GROUP, ""
+                                                )
                                             )
-                                        )
+                                        }
                                     }
+                                    println("fromUser groups is not null, size: ${fromUser!!.groups!!.size}")
+                                } else {
+                                    println("fromUser's group is null")
                                 }
+
                                 setTitleFromGroup()
 
                             } else {
@@ -338,19 +275,6 @@ or the user selects nothing. Each of these cases will be dealt with separately.
                     }
                 }
             }
-        }
-    }
-
-    private fun removeFromContacts(uid: String) {
-        // Make sure the uid is in the contact list
-        if (fromUser.contacts.contains(uid)) {
-            fsDb.collection("users").document(fromUser.uId)
-                .update("contacts", FieldValue.arrayRemove(uid))
-            Toast.makeText(
-                this,
-                resources.getString(R.string.contacts_contact_removed),
-                Toast.LENGTH_SHORT
-            ).show()
         }
     }
 

@@ -17,14 +17,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class ContactsActivityAdapter(private var usernames: List<ContactsData>, private val type: Int) :
+class ContactsActivityAdapter(private var usernames: List<ContactsData>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
         const val VIEW_TYPE_PRIVATE = 0
         const val VIEW_TYPE_GROUP = 1
-        const val VIEW_TYPE_NEITHER = 0
-        const val VIEW_TYPE_ADD = 1
-        const val VIEW_TYPE_DELETE = 2
     }
 
 
@@ -54,71 +51,58 @@ class ContactsActivityAdapter(private var usernames: List<ContactsData>, private
 
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if(type == VIEW_TYPE_NEITHER) {
-            if (usernames[position].type == VIEW_TYPE_PRIVATE) {
-                onUserBinded(holder as PrivateViewHolder, position)
-            }
-            if (usernames[position].type == VIEW_TYPE_GROUP) {
-                onGroupBinded(holder as GroupViewHolder, position)
-            }
-        }
-        if(type == VIEW_TYPE_ADD){
-
-        }
-    }
-
-    private fun onGroupBinded(holder : GroupViewHolder, position: Int){
-        holder.groupName.text = usernames[position].groupName
-        holder.profilePic.setImageResource(R.drawable.group_image)
-        if (usernames[position].isChecked) {
-            holder.isSelected.setImageResource(R.drawable.ic_baseline_check_circle_24)
-        } else if (!usernames[position].isChecked) {
-            holder.isSelected.setImageResource(com.group2.concord_messenger.R.drawable.ic_baseline_radio_button_unchecked_24)
-        }
-        holder.itemView.setOnClickListener {
+        if (usernames[position].type == VIEW_TYPE_PRIVATE) {
+            (holder as PrivateViewHolder).name.text = usernames[position].name
+            holder.profilePic.setImageResource(R.drawable.ic_baseline_person_24)
             if (usernames[position].isChecked) {
-                usernames[position].isChecked = false
+                holder.isSelected.setImageResource(R.drawable.ic_baseline_check_circle_24)
+            } else if (!usernames[position].isChecked) {
                 holder.isSelected.setImageResource(com.group2.concord_messenger.R.drawable.ic_baseline_radio_button_unchecked_24)
-            } else {
-                //when the user selected a group, nothing else should be selected
-                for (user in 0 until usernames.size - 1) {
-                    usernames[user].isChecked = false
+            }
+            //unselect row if its currently selected and clicked. Select row if its unselected and clicked.
+            holder.itemView.setOnClickListener {
+                if (usernames[position].isChecked) {
+                    usernames[position].isChecked = false
+
+                    holder.isSelected.setImageResource(com.group2.concord_messenger.R.drawable.ic_baseline_radio_button_unchecked_24)
+                } else {
+                    usernames[position].isChecked = true
+                    holder.isSelected.setImageResource(R.drawable.ic_baseline_check_circle_24)
+                    //if a user is selected, no groups should be selected
+                    for (user in 0 until usernames.size - 1) {
+                        if (usernames[user].type == VIEW_TYPE_GROUP) {
+                            usernames[user].isChecked = false
+                        }
+                    }
+                    notifyDataSetChanged()
                 }
             }
-            usernames[position].isChecked = true
-            holder.isSelected.setImageResource(R.drawable.ic_baseline_check_circle_24)
-            notifyDataSetChanged()
         }
-
-    }
-
-    private fun onUserBinded(holder : PrivateViewHolder, position: Int){
-        (holder as PrivateViewHolder).name.text = usernames[position].name
-        holder.profilePic.setImageResource(R.drawable.ic_baseline_person_24)
-        if (usernames[position].isChecked) {
-            holder.isSelected.setImageResource(R.drawable.ic_baseline_check_circle_24)
-        } else if (!usernames[position].isChecked) {
-            holder.isSelected.setImageResource(com.group2.concord_messenger.R.drawable.ic_baseline_radio_button_unchecked_24)
-        }
-        //unselect row if its currently selected and clicked. Select row if its unselected and clicked.
-        holder.itemView.setOnClickListener {
+        if (usernames[position].type == VIEW_TYPE_GROUP) {
+            (holder as GroupViewHolder).groupName.text = usernames[position].groupName
+            holder.profilePic.setImageResource(R.drawable.group_image)
             if (usernames[position].isChecked) {
-                usernames[position].isChecked = false
-
-                holder.isSelected.setImageResource(com.group2.concord_messenger.R.drawable.ic_baseline_radio_button_unchecked_24)
-            } else {
-                usernames[position].isChecked = true
                 holder.isSelected.setImageResource(R.drawable.ic_baseline_check_circle_24)
-                //if a user is selected, no groups should be selected
-                for (user in 0 until usernames.size - 1) {
-                    if (usernames[user].type == VIEW_TYPE_GROUP) {
+            } else if (!usernames[position].isChecked) {
+                holder.isSelected.setImageResource(com.group2.concord_messenger.R.drawable.ic_baseline_radio_button_unchecked_24)
+            }
+            holder.itemView.setOnClickListener {
+                if (usernames[position].isChecked) {
+                    usernames[position].isChecked = false
+                    holder.isSelected.setImageResource(com.group2.concord_messenger.R.drawable.ic_baseline_radio_button_unchecked_24)
+                } else {
+                    //when the user selected a group, nothing else should be selected
+                    for (user in 0 until usernames.size - 1) {
                         usernames[user].isChecked = false
                     }
                 }
+                usernames[position].isChecked = true
+                holder.isSelected.setImageResource(R.drawable.ic_baseline_check_circle_24)
                 notifyDataSetChanged()
             }
         }
     }
+
 
     override fun getItemCount(): Int {
         return usernames.size
@@ -155,7 +139,3 @@ class ContactsActivityAdapter(private var usernames: List<ContactsData>, private
 
 
 }
-
-
-
-

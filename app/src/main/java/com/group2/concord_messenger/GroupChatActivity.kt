@@ -130,7 +130,7 @@ class GroupChatActivity : AppCompatActivity() {
                     val mName = curUserMap["userName"]
                     groupName = "$groupName $mName"
                 }
-                val toolBar = findViewById<Toolbar>(R.id.toolbar_gchannel)
+                val toolBar = findViewById<Toolbar>(R.id.contacts_toolbar)
                 toolBar.title = groupName
 
 
