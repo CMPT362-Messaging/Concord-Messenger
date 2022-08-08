@@ -200,10 +200,8 @@ class SentMessageHolder(itemView: View) :
     fun unbind() {
         // For now if, to eliminate the error of a audio message playing that gets recycled acting
         // weird, stop the player on unbind
-//        playAudio.visibility = View.GONE
-//        pauseAudio.visibility = View.GONE
-//        audioSeekBar.visibility = View.GONE
-//        progressBar.visibility = View.GONE
+        playAudio.visibility = View.VISIBLE
+        pauseAudio.visibility = View.GONE
         audioSeekBar.progress = 0
         ap.onUnbind()
     }
@@ -219,6 +217,7 @@ class ReceivedMessageHolder(itemView: View) :
     var pauseAudio: ImageButton
     var audioSeekBar: SeekBar
     var progressBar: ProgressBar
+    lateinit var ap:ChatAudioPlayer
 
     init {
         messageText = itemView.findViewById<View>(R.id.text_gchat_message_other) as TextView
@@ -234,6 +233,7 @@ class ReceivedMessageHolder(itemView: View) :
     fun bind(message: ConcordMessage, messageId: String, ap: ChatAudioPlayer, position: Int) {
         messageText.text = message.text
         nameText.text = message.fromName
+        this.ap = ap
         if (message.createdAt != null) {
             // Format time
             val sdf = SimpleDateFormat("MMM dd")
@@ -298,10 +298,9 @@ class ReceivedMessageHolder(itemView: View) :
     fun unbind() {
         // For now if, to eliminate the error of a audio message playing that gets recycled acting
         // weird, stop the player on unbind
-//        playAudio.visibility = View.GONE
-//        pauseAudio.visibility = View.GONE
-//        audioSeekBar.visibility = View.GONE
-//        progressBar.visibility = View.GONE
+        playAudio.visibility = View.VISIBLE
+        pauseAudio.visibility = View.GONE
         audioSeekBar.progress = 0
+        ap.onUnbind()
     }
 }
