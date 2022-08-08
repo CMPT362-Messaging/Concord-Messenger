@@ -1,13 +1,15 @@
 package com.group2.concord_messenger.model
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.ProgressBar
-import android.widget.SeekBar
-import android.widget.TextView
+import android.widget.*
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
@@ -20,6 +22,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 
 const val FIREBASE_STORAGE_AUDIO_REPO = "gs://concord-messenger.appspot.com/audio/"
+const val FIREBASE_STORAGE_PHOTO_SHARING_REPO = "gs://concord-messenger.appspot.com/photo-sharing/"
 
 // TODO: update the "Enter Message" size to account for the new attachment button
 // TODO: update audio player styling
@@ -105,6 +108,7 @@ class SentMessageHolder(itemView: View) :
     var pauseAudio: ImageButton
     var audioSeekBar: SeekBar
     var progressBar: ProgressBar
+    var image: ImageView
     lateinit var ap:ChatAudioPlayer
 
     init {
@@ -115,6 +119,7 @@ class SentMessageHolder(itemView: View) :
         pauseAudio = itemView.findViewById(R.id.pause_audio_button_me)
         audioSeekBar = itemView.findViewById(R.id.audio_seek_me)
         progressBar = itemView.findViewById(R.id.progress_bar_me)
+        image = itemView.findViewById(R.id.shared_image)
     }
 
     fun bind(message: ConcordMessage, messageId: String, ap: ChatAudioPlayer, position:Int) {
@@ -174,12 +179,31 @@ class SentMessageHolder(itemView: View) :
             pauseAudio.setOnClickListener {
                 ap.pause()
             }
+        } else if (message.image) {
+            val imageFile = File("${itemView.context.filesDir}/photo-sharing/${message.imageName}.jpg")
+            progressBar.visibility = View.VISIBLE
+            val imageDir = File("${itemView.context.filesDir}/photo-sharing/")
+            if (!imageDir.exists()) {
+                imageDir.mkdir()
+            }
+            imageFile.createNewFile()
+            val storage = Firebase.storage
+            val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_PHOTO_SHARING_REPO${message.imageName}.jpg")
+            gsReference.getFile(imageFile.toUri()).addOnSuccessListener {
+                println("Image File Downloaded")
+                println("${messageId}.jpg")
+                val bitmap = getBitmap(itemView.context, imageFile.toUri())
+                image.setImageBitmap(bitmap)
+                image.visibility = View.VISIBLE
+                progressBar.visibility = View.GONE
+            }
         } else {
             // needed since the view might get recycled and shown again
             playAudio.visibility = View.GONE
             pauseAudio.visibility = View.GONE
             audioSeekBar.visibility = View.GONE
             progressBar.visibility = View.GONE
+            image.visibility = View.GONE
         }
     }
 
@@ -193,6 +217,12 @@ class SentMessageHolder(itemView: View) :
         audioSeekBar.progress = 0
         ap.onUnbind()
     }
+
+    fun getBitmap(context: Context, imgUri: Uri): Bitmap {
+        val bitmap = BitmapFactory.decodeStream(context.contentResolver.openInputStream(imgUri))
+        val matrix = Matrix()
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+    }
 }
 
 class ReceivedMessageHolder(itemView: View) :
@@ -205,6 +235,7 @@ class ReceivedMessageHolder(itemView: View) :
     var pauseAudio: ImageButton
     var audioSeekBar: SeekBar
     var progressBar: ProgressBar
+    var image: ImageView
 
     init {
         messageText = itemView.findViewById<View>(R.id.text_gchat_message_other) as TextView
@@ -215,6 +246,7 @@ class ReceivedMessageHolder(itemView: View) :
         pauseAudio = itemView.findViewById(R.id.pause_audio_button_other)
         audioSeekBar = itemView.findViewById(R.id.audio_seek_other)
         progressBar = itemView.findViewById(R.id.progress_bar_other)
+        image = itemView.findViewById(R.id.shared_image_other)
     }
 
     fun bind(message: ConcordMessage, messageId: String, ap: ChatAudioPlayer, position: Int) {
@@ -273,12 +305,34 @@ class ReceivedMessageHolder(itemView: View) :
             pauseAudio.setOnClickListener {
                 ap.pause()
             }
+        } else if (message.image) {
+            val imageFile = File("${itemView.context.filesDir}/photo-sharing/${message.imageName}.jpg")
+            progressBar.visibility = View.VISIBLE
+            val imageDir = File("${itemView.context.filesDir}/photo-sharing/")
+            if (!imageDir.exists()) {
+                imageDir.mkdir()
+            }
+            imageFile.createNewFile()
+            val storage = Firebase.storage
+            val gsReference =
+                storage.getReferenceFromUrl("$FIREBASE_STORAGE_PHOTO_SHARING_REPO${message.imageName}.jpg")
+
+            gsReference.getFile(imageFile.toUri()).addOnSuccessListener {
+                println("Image File Downloaded")
+                println("${messageId}.jpg")
+                val bitmap = getBitmap(itemView.context, imageFile.toUri())
+                image.setImageBitmap(bitmap)
+                image.visibility = View.VISIBLE
+                progressBar.visibility = View.GONE
+            }
+
         } else {
             // needed since the view might get recycled and shown again
             playAudio.visibility = View.GONE
             pauseAudio.visibility = View.GONE
             audioSeekBar.visibility = View.GONE
             progressBar.visibility = View.GONE
+            image.visibility = View.GONE
         }
     }
     fun unbind() {
@@ -289,5 +343,11 @@ class ReceivedMessageHolder(itemView: View) :
         audioSeekBar.visibility = View.GONE
         progressBar.visibility = View.GONE
         audioSeekBar.progress = 0
+    }
+
+    fun getBitmap(context: Context, imgUri: Uri): Bitmap {
+        val bitmap = BitmapFactory.decodeStream(context.contentResolver.openInputStream(imgUri))
+        val matrix = Matrix()
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 }

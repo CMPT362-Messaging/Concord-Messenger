@@ -73,11 +73,19 @@
             android:id="@+id/attachment_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
             android:layout_gravity="end"
             android:layout_marginStart="10dp"
-            android:layout_alignParentStart="true"
-            android:src="@drawable/ic_baseline_mic_24"
-            />
+            android:src="@drawable/ic_baseline_mic_24" />
+
+        <ImageButton
+            android:id="@+id/photo_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginStart="8dp"
+            android:layout_toEndOf="@+id/attachment_button"
+            android:src="@drawable/ic_baseline_photo_24" />
 
         <EditText
             android:id="@+id/edit_gchat_message"
@@ -85,7 +93,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
-            android:layout_toEndOf="@+id/attachment_button"
+            android:layout_toEndOf="@+id/photo_button"
             android:background="@android:color/transparent"
             android:hint="Enter Message"
             android:inputType="textCapSentences|textMultiLine"
