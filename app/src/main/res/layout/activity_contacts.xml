@@ -6,9 +6,35 @@
     android:layout_height="match_parent"
     tools:context=".ContactsActivity">
 
-    <ListView
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/contacts_appbar_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/contacts_listView"/>
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/contacts_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="textEnd"
+            app:title="@string/contacts_title"
+            app:titleMargin="14dp"
+            app:titleTextColor="#FFFFFF">
+
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ListView
+        android:id="@+id/contacts_listView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/contacts_appbar_layout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

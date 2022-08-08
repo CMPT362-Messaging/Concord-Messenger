@@ -107,6 +107,31 @@ class ConcordDatabase
                 getCurrentUserHandler(null)
             }
         }
+
+        /**
+         * Gets all UserProfiles.
+         */
+        fun getAllUsers(getAllUsersHandler: (userProfiles: List<UserProfile>?) -> Unit)
+        {
+            val db = FirebaseFirestore.getInstance()
+            val colRef = db.collection("users")
+            colRef.get().addOnCompleteListener()
+            {
+                if(it.isSuccessful)
+                {
+                    val users = mutableListOf<UserProfile>()
+                    for(user in it.result.documents)
+                    {
+                        users.add(user.toObject(UserProfile::class.java)!!)
+                    }
+                    getAllUsersHandler(users)
+                }
+                else
+                {
+                    getAllUsersHandler(null)
+                }
+            }
+        }
     }
 }
 
