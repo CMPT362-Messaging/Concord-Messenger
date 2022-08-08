@@ -1,13 +1,16 @@
 package com.group2.concord_messenger.model
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.ProgressBar
-import android.widget.SeekBar
-import android.widget.TextView
+import android.widget.*
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
@@ -19,8 +22,11 @@ import com.group2.concord_messenger.R
 import com.group2.concord_messenger.utils.FIREBASE_STORAGE_AUDIO_REPO
 import com.group2.concord_messenger.utils.checkAudioFilePaths
 import java.io.File
+import java.io.IOException
 import java.text.SimpleDateFormat
 
+const val FIREBASE_STORAGE_AUDIO_REPO = "gs://concord-messenger.appspot.com/audio/"
+const val FIREBASE_STORAGE_PHOTO_SHARING_REPO = "gs://concord-messenger.appspot.com/photo-sharing/"
 
 // TODO: update the "Enter Message" size to account for the new attachment button
 class ChatMessageListAdapter(private val fromUid: String, private val recyclerView: RecyclerView,
@@ -103,6 +109,7 @@ class SentMessageHolder(itemView: View) :
     var pauseAudio: ImageButton
     var audioSeekBar: SeekBar
     var progressBar: ProgressBar
+    var image: ImageView
     lateinit var ap:ChatAudioPlayer
 
     init {
@@ -113,11 +120,13 @@ class SentMessageHolder(itemView: View) :
         pauseAudio = itemView.findViewById(R.id.pause_audio_button_me)
         audioSeekBar = itemView.findViewById(R.id.audio_seek_me)
         progressBar = itemView.findViewById(R.id.progress_bar_me)
+        image = itemView.findViewById(R.id.shared_image)
     }
 
     fun bind(message: ConcordMessage, messageId: String, ap: ChatAudioPlayer, position:Int) {
         this.ap = ap
         println("HOLDERPOSITION$position")
+
         messageText.text = message.text
         if (message.createdAt != null) {
             // Format time
@@ -130,14 +139,19 @@ class SentMessageHolder(itemView: View) :
         }
 
         if (message.audio) {
+            // This adds backwards compatibility for old audio messages before using a new UUID
+            var audioMessageId = message.audioId
+            if (audioMessageId == "") {
+                audioMessageId = messageId
+            }
             // if audio file is not saved locally fetch from Firebase and save locally
-            val audioFile = File("${itemView.context.filesDir}/audio/$messageId.3gp")
+            val audioFile = File("${itemView.context.filesDir}/audio/$audioMessageId.3gp")
             if (!audioFile.exists() || audioFile.length() <= 0) {
                 progressBar.visibility = View.VISIBLE
                 checkAudioFilePaths(itemView.context)
                 audioFile.createNewFile()
                 val storage = Firebase.storage
-                val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_AUDIO_REPO$messageId.3gp")
+                val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_AUDIO_REPO$audioMessageId.3gp")
                 gsReference.getFile(audioFile.toUri()).addOnSuccessListener {
                     println("Audio File Downloaded")
                     progressBar.visibility = View.GONE
@@ -150,19 +164,6 @@ class SentMessageHolder(itemView: View) :
                     messageText.text = "$durationMs ms"
                     metaData.release()
                     audioSeekBar.max = durationMs!!.toInt()
-                }.removeOnFailureListener {
-                    gsReference.getFile(audioFile.toUri()).addOnSuccessListener {
-                        progressBar.visibility = View.GONE
-                        playAudio.visibility = View.VISIBLE
-                        audioSeekBar.visibility = View.VISIBLE
-                        // Set duration
-                        val metaData  = MediaMetadataRetriever()
-                        metaData.setDataSource(audioFile.toString())
-                        val durationMs = metaData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                        messageText.text = "%.2f s".format((durationMs?.toInt()?.div(1000.0)))
-                        metaData.release()
-                        audioSeekBar.max = durationMs!!.toInt()
-                    }
                 }
 
             } else {
@@ -183,12 +184,30 @@ class SentMessageHolder(itemView: View) :
             pauseAudio.setOnClickListener {
                 ap.pause()
             }
+        } else if (message.image) {
+            val imageFile = File("${itemView.context.filesDir}/photo-sharing/${message.imageName}.jpg")
+            progressBar.visibility = View.VISIBLE
+            val imageDir = File("${itemView.context.filesDir}/photo-sharing/")
+            if (!imageDir.exists()) {
+                imageDir.mkdir()
+            }
+            imageFile.createNewFile()
+            val storage = Firebase.storage
+            val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_PHOTO_SHARING_REPO${message.imageName}.jpg")
+            gsReference.getFile(imageFile.toUri()).addOnSuccessListener {
+                println("Image File Downloaded")
+                val bitmap = getBitmap(itemView.context, imageFile.toUri(), imageFile.path)
+                image.setImageBitmap(bitmap)
+                image.visibility = View.VISIBLE
+                progressBar.visibility = View.GONE
+            }
         } else {
             // needed since the view might get recycled and shown again
             playAudio.visibility = View.GONE
             pauseAudio.visibility = View.GONE
             audioSeekBar.visibility = View.GONE
             progressBar.visibility = View.GONE
+            image.visibility = View.GONE
         }
     }
 
@@ -196,6 +215,25 @@ class SentMessageHolder(itemView: View) :
         // For now if, to eliminate the error of a audio message playing that gets recycled acting
         // weird, stop the player on unbind
         ap.onUnbind()
+    }
+
+    fun getBitmap(context: Context, imgUri: Uri, imgPath: String): Bitmap {
+        val bitmap = BitmapFactory.decodeStream(context.contentResolver.openInputStream(imgUri))
+        val matrix = Matrix()
+        var rotate = 0f
+        try {
+            val exif = ExifInterface(imgPath)
+            val orientation: String? = exif.getAttribute(ExifInterface.TAG_ORIENTATION)
+            when(orientation) {
+                "6" -> rotate = 90f
+                "8" -> rotate = 270f
+                "3" -> rotate = 180f
+            }
+        } catch(e: IOException) {
+            e.printStackTrace()
+        }
+        matrix.setRotate(rotate)
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 }
 
@@ -209,6 +247,7 @@ class ReceivedMessageHolder(itemView: View) :
     var pauseAudio: ImageButton
     var audioSeekBar: SeekBar
     var progressBar: ProgressBar
+    var image: ImageView
     lateinit var ap:ChatAudioPlayer
 
     init {
@@ -220,6 +259,7 @@ class ReceivedMessageHolder(itemView: View) :
         pauseAudio = itemView.findViewById(R.id.pause_audio_button_other)
         audioSeekBar = itemView.findViewById(R.id.audio_seek_other)
         progressBar = itemView.findViewById(R.id.progress_bar_other)
+        image = itemView.findViewById(R.id.shared_image_other)
     }
 
     fun bind(message: ConcordMessage, messageId: String, ap: ChatAudioPlayer, position: Int) {
@@ -237,14 +277,19 @@ class ReceivedMessageHolder(itemView: View) :
         }
 
         if (message.audio) {
+            // This adds backwards compatibility for old audio messages before using a new UUID
+            var audioMessageId = message.audioId
+            if (audioMessageId == "") {
+                audioMessageId = messageId
+            }
             // if audio file is not saved locally fetch from Firebase and save locally
-            val audioFile = File("${itemView.context.filesDir}/audio/$messageId.3gp")
+            val audioFile = File("${itemView.context.filesDir}/audio/$audioMessageId.3gp")
             if (!audioFile.exists() || audioFile.length() <= 0) {
                 progressBar.visibility = View.VISIBLE
                 checkAudioFilePaths(itemView.context)
                 audioFile.createNewFile()
                 val storage = Firebase.storage
-                val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_AUDIO_REPO$messageId.3gp")
+                val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_AUDIO_REPO$audioMessageId.3gp")
                 gsReference.getFile(audioFile.toUri()).addOnSuccessListener {
                     println("Audio File Downloaded")
                     progressBar.visibility = View.GONE
@@ -276,12 +321,33 @@ class ReceivedMessageHolder(itemView: View) :
             pauseAudio.setOnClickListener {
                 ap.pause()
             }
+        } else if (message.image) {
+            val imageFile = File("${itemView.context.filesDir}/photo-sharing/${message.imageName}.jpg")
+            progressBar.visibility = View.VISIBLE
+            val imageDir = File("${itemView.context.filesDir}/photo-sharing/")
+            if (!imageDir.exists()) {
+                imageDir.mkdir()
+            }
+            imageFile.createNewFile()
+            val storage = Firebase.storage
+            val gsReference =
+                storage.getReferenceFromUrl("$FIREBASE_STORAGE_PHOTO_SHARING_REPO${message.imageName}.jpg")
+
+            gsReference.getFile(imageFile.toUri()).addOnSuccessListener {
+                println("Image File Downloaded")
+                val bitmap = getBitmap(itemView.context, imageFile.toUri(), imageFile.path)
+                image.setImageBitmap(bitmap)
+                image.visibility = View.VISIBLE
+                progressBar.visibility = View.GONE
+            }
+
         } else {
             // needed since the view might get recycled and shown again
             playAudio.visibility = View.GONE
             pauseAudio.visibility = View.GONE
             audioSeekBar.visibility = View.GONE
             progressBar.visibility = View.GONE
+            image.visibility = View.GONE
             messageText.text = ""
         }
     }
@@ -289,5 +355,24 @@ class ReceivedMessageHolder(itemView: View) :
         // For now if, to eliminate the error of a audio message playing that gets recycled acting
         // weird, stop the player on unbind
         ap.onUnbind()
+    }
+
+    fun getBitmap(context: Context, imgUri: Uri, imgPath: String): Bitmap {
+        val bitmap = BitmapFactory.decodeStream(context.contentResolver.openInputStream(imgUri))
+        val matrix = Matrix()
+        var rotate = 0f
+        try {
+            val exif = ExifInterface(imgPath)
+            val orientation: String? = exif.getAttribute(ExifInterface.TAG_ORIENTATION)
+            when(orientation) {
+                "6" -> rotate = 90f
+                "8" -> rotate = 270f
+                "3" -> rotate = 180f
+            }
+        } catch(e: IOException) {
+            e.printStackTrace()
+        }
+        matrix.setRotate(rotate)
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 }
