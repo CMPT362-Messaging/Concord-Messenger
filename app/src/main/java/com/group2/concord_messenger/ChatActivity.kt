@@ -105,13 +105,12 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
 
             updateCurrentUser()
         }
+
         attachButton.setOnClickListener {
             checkPermissions(this)
             val dia = AudioDialog()
             dia.show(supportFragmentManager, "audioPicker")
         }
-
-        updateCurrentUser()
 
         profileButton = findViewById(R.id.profile_button)
         profileButton.setOnClickListener {
