@@ -11,5 +11,7 @@ class ConcordMessage(
     val fromName: String = "",
     var text: String = "Default message",
     var audio: Boolean = false, // Audio files are stored in Firebase Storage under /audio/{groupMessageId}.3gp
+    var image: Boolean = false,
+    var imageName: String = "",
     @ServerTimestamp
     var createdAt: Date? = null) : Serializable
