@@ -141,7 +141,6 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
                 }
             }
 
-
         profileButton = findViewById(R.id.profile_button)
         profileButton.setOnClickListener {
             val intent = Intent(this, UserProfileActivity::class.java)
@@ -199,6 +198,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
             // Add adapter (with messages) to the RecyclerView
             messageRecycler.layoutManager = LinearLayoutManager(this)
             messageRecycler.adapter = messageAdapter
+
             messageAdapter!!.startListening()
 
             sendBtn.setOnClickListener {

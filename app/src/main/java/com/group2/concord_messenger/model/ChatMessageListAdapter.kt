@@ -67,15 +67,6 @@ class ChatMessageListAdapter(private val fromUid: String, private val recyclerVi
         }
     }
 
-    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
-        super.onViewDetachedFromWindow(holder)
-        if (holder.itemViewType == VIEW_TYPE_MESSAGE_SENT) {
-            (holder as SentMessageHolder).unbind()
-        } else {
-            (holder as ReceivedMessageHolder).unbind()
-        }
-    }
-
     override fun stopListening() {
         // stop all audio streams
         audioPlayer.onComplete()
@@ -115,9 +106,25 @@ class SentMessageHolder(itemView: View) :
         image = itemView.findViewById(R.id.shared_image)
     }
 
+    fun clearAll() {
+        println("********************************REBOUND ADAPTER")
+        messageText.text = ""
+        dateText.text = ""
+        timeText.text = ""
+        playAudio.visibility = View.GONE
+        pauseAudio.visibility = View.GONE
+        audioSeekBar.progress = 0
+        audioSeekBar.visibility = View.GONE
+        progressBar.visibility = View.GONE
+        image.setImageBitmap(null)
+//        ap.pause()
+//        ap.unClaim()
+    }
+
     fun bind(message: ConcordMessage, messageId: String, ap: ChatAudioPlayer, position:Int) {
         this.ap = ap
-        println("HOLDERPOSITION$position")
+//        ap.onUnbind()
+//        clearAll()
 
         messageText.text = message.text
         if (message.createdAt != null) {
@@ -136,6 +143,8 @@ class SentMessageHolder(itemView: View) :
             if (audioMessageId == "") {
                 audioMessageId = messageId
             }
+            playAudio.visibility = View.VISIBLE
+            audioSeekBar.visibility = View.VISIBLE
             // if audio file is not saved locally fetch from Firebase and save locally
             val audioFile = File("${itemView.context.filesDir}/audio/$audioMessageId.3gp")
             if (!audioFile.exists() || audioFile.length() <= 0) {
@@ -147,8 +156,7 @@ class SentMessageHolder(itemView: View) :
                 gsReference.getFile(audioFile.toUri()).addOnSuccessListener {
                     println("Audio File Downloaded")
                     progressBar.visibility = View.GONE
-                    playAudio.visibility = View.VISIBLE
-                    audioSeekBar.visibility = View.VISIBLE
+
                     // Set duration
                     val metaData  = MediaMetadataRetriever()
                     metaData.setDataSource(audioFile.toString())
@@ -179,6 +187,7 @@ class SentMessageHolder(itemView: View) :
         } else if (message.image) {
             val imageFile = File("${itemView.context.filesDir}/photo-sharing/${message.imageName}.jpg")
             progressBar.visibility = View.VISIBLE
+            image.visibility = View.VISIBLE
             val imageDir = File("${itemView.context.filesDir}/photo-sharing/")
             if (!imageDir.exists()) {
                 imageDir.mkdir()
@@ -190,24 +199,17 @@ class SentMessageHolder(itemView: View) :
                 println("Image File Downloaded")
                 val bitmap = getBitmap(itemView.context, imageFile.toUri(), imageFile.path)
                 image.setImageBitmap(bitmap)
-                image.visibility = View.VISIBLE
                 progressBar.visibility = View.GONE
             }
         } else {
             // needed since the view might get recycled and shown again
+            ap.onUnbind()
             playAudio.visibility = View.GONE
             pauseAudio.visibility = View.GONE
             audioSeekBar.visibility = View.GONE
             progressBar.visibility = View.GONE
             image.visibility = View.GONE
         }
-    }
-
-    fun unbind() {
-        // For now if, to eliminate the error of a audio message playing that gets recycled acting
-        // weird, stop the player on unbind
-        ap.onUnbind()
-        image.visibility = View.GONE
     }
 }
 
@@ -236,10 +238,25 @@ class ReceivedMessageHolder(itemView: View) :
         image = itemView.findViewById(R.id.shared_image_other)
     }
 
+    fun clearAll() {
+        println("********************************REBOUND ADAPTER")
+        messageText.text = ""
+        dateText.text = ""
+        timeText.text = ""
+        playAudio.visibility = View.GONE
+        pauseAudio.visibility = View.GONE
+        audioSeekBar.progress = 0
+        audioSeekBar.visibility = View.GONE
+        progressBar.visibility = View.GONE
+        image.setImageBitmap(null)
+        ap.onUnbind()
+    }
+
     fun bind(message: ConcordMessage, messageId: String, ap: ChatAudioPlayer, position: Int) {
+        this.ap = ap
+//        clearAll()
         messageText.text = message.text
         nameText.text = message.fromName
-        this.ap = ap
         if (message.createdAt != null) {
             // Format time
             val sdf = SimpleDateFormat("MMM dd")
@@ -256,6 +273,8 @@ class ReceivedMessageHolder(itemView: View) :
             if (audioMessageId == "") {
                 audioMessageId = messageId
             }
+            playAudio.visibility = View.VISIBLE
+            audioSeekBar.visibility = View.VISIBLE
             // if audio file is not saved locally fetch from Firebase and save locally
             val audioFile = File("${itemView.context.filesDir}/audio/$audioMessageId.3gp")
             if (!audioFile.exists() || audioFile.length() <= 0) {
@@ -267,8 +286,6 @@ class ReceivedMessageHolder(itemView: View) :
                 gsReference.getFile(audioFile.toUri()).addOnSuccessListener {
                     println("Audio File Downloaded")
                     progressBar.visibility = View.GONE
-                    playAudio.visibility = View.VISIBLE
-                    audioSeekBar.visibility = View.VISIBLE
                     // Set duration
                     val metaData  = MediaMetadataRetriever()
                     metaData.setDataSource(audioFile.toString())
@@ -317,6 +334,7 @@ class ReceivedMessageHolder(itemView: View) :
 
         } else {
             // needed since the view might get recycled and shown again
+            ap.onUnbind()
             playAudio.visibility = View.GONE
             pauseAudio.visibility = View.GONE
             audioSeekBar.visibility = View.GONE
@@ -325,10 +343,5 @@ class ReceivedMessageHolder(itemView: View) :
             messageText.text = ""
         }
     }
-    fun unbind() {
-        // For now if, to eliminate the error of a audio message playing that gets recycled acting
-        // weird, stop the player on unbind
-        ap.onUnbind()
-        image.visibility = View.GONE
-    }
+
 }

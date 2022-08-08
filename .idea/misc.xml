@@ -6,13 +6,10 @@
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/ic_baseline_attach_file_24.xml" value="0.245" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/ic_baseline_edit_24.xml" value="0.245" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/ic_baseline_fiber_manual_record_32.xml" value="0.245" />
-        <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/ic_baseline_fiber_manual_record_48.xml" value="0.227" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/ic_baseline_more_vert_24.xml" value="0.2735" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/ic_baseline_pause_32.xml" value="0.245" />
-        <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/ic_baseline_pause_circle_24.xml" value="0.227" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/ic_baseline_person_32.xml" value="0.245" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/ic_baseline_play_arrow_24.xml" value="0.245" />
-        <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/ic_baseline_play_circle_24.xml" value="0.227" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/ic_launcher_background.xml" value="0.245" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/ic_noun_user_138354.xml" value="0.245" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/drawable/record.xml" value="0.2315" />
@@ -24,8 +21,11 @@
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/layout/activity_register.xml" value="0.3359375" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/layout/activity_user_profile.xml" value="0.33" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/layout/audio_dialog.xml" value="0.32916666666666666" />
-        <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/layout/message_me.xml" value="0.5" />
+        <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/layout/message_me.xml" value="0.19402985074626866" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/layout/message_other.xml" value="0.2921875" />
+        <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/menu/chat_list_menu.xml" value="0.33796296296296297" />
+        <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/menu/contacts_delete.xml" value="0.33796296296296297" />
+        <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/menu/contacts_search.xml" value="0.33796296296296297" />
         <entry key="..\:/Users/David/AndroidStudioProjects/Concord-Messenger/app/src/main/res/xml/paths.xml" value="0.365625" />
         <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.2565" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.2565" />

@@ -96,6 +96,7 @@ class ChatAudioPlayer: SeekBar.OnSeekBarChangeListener {
             onComplete()
             playAudio.visibility = View.GONE
             audioSeekBar.visibility = View.GONE
+            messageText.text = ""
             unClaim()
         }
     }

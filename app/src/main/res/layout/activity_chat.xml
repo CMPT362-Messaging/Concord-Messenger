@@ -68,7 +68,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-<!--        TODO Update to be a nice icon, maybe use a spinner-->
         <ImageButton
             android:id="@+id/attachment_button"
             android:layout_width="wrap_content"

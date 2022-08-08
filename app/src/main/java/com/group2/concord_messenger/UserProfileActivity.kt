@@ -29,13 +29,6 @@ import java.io.File
 import java.io.FileDescriptor
 import java.io.FileOutputStream
 
-// TODO: fix the crashing related to saving/cancelling inside of the message viewer
-/* TODO: Styling updates including:
-    - adding icons for edit and view profile buttons
-    - make the profile image larger
-    - add a loading bar to the image? might not be needed once local database is setup
-    - tap edit icon to cancel the edit as well
- */
 class UserProfileActivity : AppCompatActivity(), PickPhotoFragment.PickPhotoListener {
     private lateinit var profileTitle: TextView
     private lateinit var usernameField: EditText
