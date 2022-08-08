@@ -24,17 +24,11 @@ import com.group2.concord_messenger.ConcordDatabase.Companion.getCurrentUser
 import com.group2.concord_messenger.dialogs.PickPhotoFragment
 import com.group2.concord_messenger.model.UserProfile
 import com.group2.concord_messenger.utils.checkPermissions
+import com.group2.concord_messenger.utils.getBitmap
 import java.io.File
 import java.io.FileDescriptor
 import java.io.FileOutputStream
 
-// TODO: fix the crashing related to saving/cancelling inside of the message viewer
-/* TODO: Styling updates including:
-    - adding icons for edit and view profile buttons
-    - make the profile image larger
-    - add a loading bar to the image? might not be needed once local database is setup
-    - tap edit icon to cancel the edit as well
- */
 class UserProfileActivity : AppCompatActivity(), PickPhotoFragment.PickPhotoListener {
     private lateinit var profileTitle: TextView
     private lateinit var usernameField: EditText
@@ -103,7 +97,6 @@ class UserProfileActivity : AppCompatActivity(), PickPhotoFragment.PickPhotoList
             saveButton.visibility = View.VISIBLE
             cancelButton.visibility = View.VISIBLE
             usernameField.isEnabled = true
-            // TODO: should the email be updatable?
             bioField.isEnabled = true
         }
 
@@ -112,11 +105,7 @@ class UserProfileActivity : AppCompatActivity(), PickPhotoFragment.PickPhotoList
         ){ result: ActivityResult ->
             println(result)
             if(result.resultCode == Activity.RESULT_OK){
-                val parcelFileDescriptor: ParcelFileDescriptor =
-                    contentResolver.openFileDescriptor(profileImgUri, "r")!!
-                val fileDescriptor: FileDescriptor = parcelFileDescriptor.fileDescriptor
-                val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
-                parcelFileDescriptor.close()
+                val bitmap = getBitmap(this, profileImgUri, profileImgUri.path!!)
                 profileImgView.setImageBitmap(bitmap)
                 profileImgView.setImageURI(profileImgUri) // this fixes image orientation issues
             }
@@ -169,7 +158,7 @@ class UserProfileActivity : AppCompatActivity(), PickPhotoFragment.PickPhotoList
                 val gsReference = storage.getReferenceFromUrl(userData.profileImg)
                 gsReference.getFile(profileImgUri).addOnSuccessListener {
                     // Local temp file has been created
-                    val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, profileImgUri)
+                    val bitmap = getBitmap(this, profileImgUri, profileImgUri.path!!)
                     profileImgView.setImageBitmap(bitmap)
                 }
             }
