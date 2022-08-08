@@ -94,9 +94,16 @@ class AudioDialog : DialogFragment() {
                         println("ERROR")
                         println(e)
                     }
+                    ap.pause()
+                    ap.unclaim()
                     recordButton.visibility = View.GONE
                     stopButton.visibility = View.VISIBLE
                     playButton.visibility = View.GONE
+                    pauseButton.visibility = View.GONE
+                    seekBar.visibility = View.GONE
+                    durationText.visibility = View.GONE
+                    durationText.text = ""
+                    seekBar.progress = 0
                     start()
                 }
             }

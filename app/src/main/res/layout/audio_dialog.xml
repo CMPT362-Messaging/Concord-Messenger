@@ -15,19 +15,28 @@
         android:id="@+id/stop_record_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_baseline_stop_circle_32"
+        android:minWidth="15dp"
+        android:minHeight="15dp"
+        android:src="@drawable/ic_baseline_stop_circle_48"
+        style="?android:attr/borderlessButtonStyle"
         android:visibility="gone"/>
     <ImageButton
         android:id="@+id/pause_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_baseline_pause_32"
+        android:minWidth="15dp"
+        android:minHeight="15dp"
+        android:src="@drawable/ic_baseline_pause_circle_48"
+        style="?android:attr/borderlessButtonStyle"
         android:visibility="gone"/>
     <ImageButton
         android:id="@+id/play_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_baseline_play_arrow_32"
+        android:minWidth="15dp"
+        android:minHeight="15dp"
+        android:src="@drawable/ic_baseline_play_circle_48"
+        style="?android:attr/borderlessButtonStyle"
         android:visibility="gone"/>
     <SeekBar
         android:id="@+id/audio_seek"
@@ -35,7 +44,7 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:layout_gravity="center_horizontal"
-        android:minWidth="150dp"/>
+        android:minWidth="180dp"/>
     <TextView
         android:id="@+id/duration_text"
         android:layout_width="wrap_content"

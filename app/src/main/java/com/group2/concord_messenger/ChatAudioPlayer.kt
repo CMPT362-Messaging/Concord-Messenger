@@ -99,6 +99,14 @@ class ChatAudioPlayer: SeekBar.OnSeekBarChangeListener {
         mp.release()
     }
 
+    fun getMediaPlayer(): MediaPlayer {
+        return mp
+    }
+
+    fun unclaim() {
+        claimed = false
+    }
+
     override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
         if (p2) {
             messageText.text = "%.2f s".format((p0?.max?.minus(p1)?.div(1000.0)))
