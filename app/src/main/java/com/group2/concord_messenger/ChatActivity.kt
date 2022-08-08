@@ -1,12 +1,17 @@
 package com.group2.concord_messenger
 
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.net.toUri
+import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
@@ -14,14 +19,19 @@ import com.google.firebase.auth.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+import com.group2.concord_messenger.dialogs.AudioDialog
 import com.group2.concord_messenger.model.ChatMessageListAdapter
 import com.group2.concord_messenger.model.ConcordMessage
 import com.group2.concord_messenger.model.UserProfile
+import com.group2.concord_messenger.utils.checkPermissions
+import java.io.File
 
-
-class ChatActivity : AppCompatActivity() {
+class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
     private lateinit var editText: EditText
     private lateinit var sendBtn: Button
+    private lateinit var attachButton: ImageButton
     // The Firestore database where all messages will be added
     private lateinit var fsDb: FirebaseFirestore
     private lateinit var firebaseAuth: FirebaseAuth
@@ -33,25 +43,81 @@ class ChatActivity : AppCompatActivity() {
     // Id of this chat group (for now this group only has two people)
     private var groupId: String = ""
     private var messageAdapter: ChatMessageListAdapter? = null
+    private lateinit var messageRecycler: RecyclerView
+
+    private lateinit var profileButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
         fsDb = FirebaseFirestore.getInstance()
-        val toolBar = findViewById<Toolbar>(R.id.toolbar_gchannel)
+        val toolBar = findViewById<Toolbar>(R.id.contacts_toolbar)
 
         editText = findViewById(R.id.edit_gchat_message)
         sendBtn = findViewById(R.id.button_gchat_send)
+        attachButton = findViewById(R.id.attachment_button)
 
-        fromUser = intent.extras?.get("fromUser") as UserProfile
-        toUser = intent.extras?.get("toUser") as UserProfile
-        // Set the title of the chat to the toUser's name
-        toolBar.title = toUser.userName
-        fromGroups = fromUser.groups
-        toGroups = toUser.groups
-        groupId = intent.extras?.get("roomId") as String
+        // If ChatActivity is being launched from a notification we will get all message
+        // data from the intent extras
+        val bundle = intent.extras
+        if (bundle?.getString("senderId") != null) {
+            ConcordDatabase.getCurrentUser {
+                if (it != null) {
+                    fromUser = it
+                    val senderId = bundle.getString("senderId")
+                    val recipientId = bundle.getString("recipientId")
+                    if (recipientId != fromUser.uId) {
+                        // This message is not for the currently logged in user
+                        // Simply end the activity
+                        finish()
+                    }
+                    val senderRef = fsDb.collection("users").document(senderId!!)
+                    senderRef.get().addOnCompleteListener { snap ->
+                        if(snap.isSuccessful && snap.result.exists()) {
+                            toUser = snap.result.toObject(UserProfile::class.java)!!
+                            toolBar.title = toUser.userName
+                            fromGroups = fromUser.groups
+                            toGroups = toUser.groups
+                            groupId = "none"
+                            updateCurrentUser()
+                        }
+                        else {
+                            Log.println(Log.DEBUG, "MyFirebaseMessagingService",
+                                "Query for sender user was not successful")
+                        }
+                    }
+                } else {
+                    // User is not logged in, notification is old
+                    // Take the user to the login page just to be nice
+                    val intent = Intent(this, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                }
+            }
+        } else {
+            fromUser = intent.extras?.get("fromUser") as UserProfile
+            toUser = intent.extras?.get("toUser") as UserProfile
+            // Set the title of the chat to the toUser's name
+            toolBar.title = toUser.userName
+            fromGroups = fromUser.groups
+            toGroups = toUser.groups
+            groupId = intent.extras?.get("roomId") as String
 
-        updateCurrentUser()
+            updateCurrentUser()
+        }
+
+        attachButton.setOnClickListener {
+            checkPermissions(this)
+            val dia = AudioDialog()
+            dia.show(supportFragmentManager, "audioPicker")
+        }
+
+        profileButton = findViewById(R.id.profile_button)
+        profileButton.setOnClickListener {
+            val intent = Intent(this, UserProfileActivity::class.java)
+            intent.putExtra("user", toUser)
+            startActivity(intent)
+        }
     }
 
     private fun updateCurrentUser() {
@@ -97,12 +163,13 @@ class ChatActivity : AppCompatActivity() {
             val options = FirestoreRecyclerOptions.Builder<ConcordMessage>()
                 .setQuery(query, ConcordMessage::class.java).build()
 
-            val messageRecycler: RecyclerView = findViewById(R.id.recycler_gchat)
+            messageRecycler = findViewById(R.id.recycler_gchat)
             messageAdapter = ChatMessageListAdapter(fromUser.uId,
                 messageRecycler, options)
             // Add adapter (with messages) to the RecyclerView
             messageRecycler.layoutManager = LinearLayoutManager(this)
             messageRecycler.adapter = messageAdapter
+//            messageAdapter!!.setMediaPlayer(mp)
             messageAdapter!!.startListening()
 
             sendBtn.setOnClickListener {
@@ -113,7 +180,7 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-    private fun sendMessage(msg: ConcordMessage) {
+    private fun sendMessage(msg: ConcordMessage, audioFile: File? = null) {
         if (fromGroups == null) {
             fromGroups = mutableMapOf()
         }
@@ -137,7 +204,7 @@ class ChatActivity : AppCompatActivity() {
         println("sendMessage: toUser groups size ${toUser.groups!!.size}")
         // Write this new data to the db
         fsDb.collection("users").document(toUser.uId)
-            .set(toUser, SetOptions.merge())
+            .update(mapOf("groups" to toGroups))
         fsDb.collection("groups").document(toUser.uId)
             .collection("userGroups").document(groupId).set(fromUser, SetOptions.merge())
 
@@ -151,12 +218,44 @@ class ChatActivity : AppCompatActivity() {
         //              |-> message_n
         // Currently a group only holds 2 people
         fsDb.collection("messages").document(groupId)
-            .collection("groupMessages").add(msg)
+            .collection("groupMessages").add(msg).addOnSuccessListener {
+                // Upload the audio file to Firebase Storage
+                if (msg.audio) {
+                    val audioFileName = it.id + ".3gp"  // each message is limited to one audio recording
+                    val storage = Firebase.storage
+                    val imageRef = storage.reference.child("audio/${audioFileName}")
+                    imageRef.putFile(audioFile?.toUri()!!)
+                        .addOnSuccessListener { taskSnapshot ->
+                        }
+                    // save the audio file in permanent local storage so it doesn't need to be fetched from Firebase everytime the chat is opened
+                    val persistentAudioFile = File(this.filesDir, "audio/${audioFileName}")
+                    // check that audio directory and file do not exist
+                    if (!persistentAudioFile.exists()) {
+                        persistentAudioFile.createNewFile()
+                    }
+                    // check that audio directory and file do not exist
+                    val audioDir = File("${this.filesDir}/audio/")
+                    if (!audioDir.exists()) {
+                        audioDir.mkdir()
+                    }
+                    if (!persistentAudioFile.exists()) {
+                        persistentAudioFile.createNewFile()
+                    }
+                    audioFile.copyTo(persistentAudioFile, overwrite = true)
+                }
+            }
+        // Add the message to the receiving user's inbox
+        // A user's inbox is a collection of every message sent to them, used for notifications
+        fsDb.collection("userInbox").document(toUser.uId)
+            .collection("messages").add(msg)
+
     }
 
     override fun onStart() {
         super.onStart()
         if (messageAdapter != null) {
+            messageRecycler.recycledViewPool.clear()
+            messageAdapter!!.notifyDataSetChanged()
             messageAdapter!!.startListening()
         }
     }
@@ -166,5 +265,11 @@ class ChatActivity : AppCompatActivity() {
         if (messageAdapter != null) {
             messageAdapter!!.stopListening()
         }
+    }
+
+    override fun onAudioComplete(dialog: DialogFragment, filename: String) {
+        val message = ConcordMessage(fromUser.uId, fromUser.userName, editText.text.toString(), true)
+        editText.text.clear()
+        sendMessage(message, File(filename))
     }
 }

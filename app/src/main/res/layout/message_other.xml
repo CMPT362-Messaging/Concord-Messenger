@@ -56,8 +56,38 @@
             android:id="@+id/layout_gchat_container_other"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
+            android:orientation="horizontal">
+            <ImageButton
+                android:id="@+id/play_audio_button_other"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:visibility="gone"
+                android:src="@drawable/ic_baseline_play_circle_24"
+                />
+            <ImageButton
+                android:id="@+id/pause_audio_button_other"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:visibility="gone"
+                android:src="@drawable/ic_baseline_pause_circle_24"
+                />
+            <SeekBar
+                android:id="@+id/audio_seek_other"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:saveEnabled="false"
+                android:progressBackgroundTint="@color/black"
+                android:layout_gravity="center_vertical"
+                android:minWidth="100dp"/>
+            <ProgressBar
+                android:id="@+id/progress_bar_other"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_margin="5dp"
+                android:visibility="gone"/>
             <TextView
                 android:id="@+id/text_gchat_message_other"
                 android:layout_width="wrap_content"

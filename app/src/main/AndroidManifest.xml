@@ -4,6 +4,10 @@
     package="com.group2.concord_messenger">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:allowBackup="true"
@@ -15,9 +19,27 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ConcordMessenger"
         tools:targetApi="31">
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.group2.concord_messenger"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/paths" />
+        </provider>
+        <activity
+            android:name=".UserProfileActivity"
+            android:theme="@style/Theme.ConcordMessenger.NoActionBar"
+            android:exported="false" />
+        <activity
+            android:name=".AddContactsActivity"
+            android:exported="false"
+            android:parentActivityName=".ContactsActivity"/>
         <activity
             android:name=".RegisterActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:parentActivityName=".LoginActivity"/>
         <activity
             android:name=".HomeActivity"
             android:exported="false" />
@@ -26,7 +48,13 @@
             android:exported="false" />
         <activity
             android:name=".ChatActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:parentActivityName=".ChatListActivity">
+            <intent-filter>
+                <action android:name="SHOW_DETAILS"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
         <activity
             android:name=".GroupChatActivity"
             android:exported="true" />
@@ -34,7 +62,8 @@
             android:name=".ChatListActivity"
             android:exported="true"
             android:label="@string/title_activity_chat_list"
-            android:theme="@style/Theme.ConcordMessenger.NoActionBar" />
+            android:theme="@style/Theme.ConcordMessenger.NoActionBar"
+            android:parentActivityName=".LoginActivity"/>
         <activity
             android:name=".LoginActivity"
             android:exported="true">
@@ -48,9 +77,6 @@
         <service
             android:name=".model.MyFirebaseMessagingService"
             android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
         </service>
     </application>
 
