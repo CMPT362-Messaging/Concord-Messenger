@@ -93,6 +93,7 @@ class ChatAudioPlayer: SeekBar.OnSeekBarChangeListener {
 
     fun onUnbind() {
         onComplete()
+        unClaim()
     }
 
     fun onDestroy() {
@@ -103,7 +104,7 @@ class ChatAudioPlayer: SeekBar.OnSeekBarChangeListener {
         return mp
     }
 
-    fun unclaim() {
+    fun unClaim() {
         claimed = false
     }
 

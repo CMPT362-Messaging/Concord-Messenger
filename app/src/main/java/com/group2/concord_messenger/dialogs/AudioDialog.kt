@@ -95,7 +95,7 @@ class AudioDialog : DialogFragment() {
                         println(e)
                     }
                     ap.pause()
-                    ap.unclaim()
+                    ap.unClaim()
                     recordButton.visibility = View.GONE
                     stopButton.visibility = View.VISIBLE
                     playButton.visibility = View.GONE

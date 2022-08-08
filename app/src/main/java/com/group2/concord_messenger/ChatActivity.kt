@@ -7,7 +7,6 @@ import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.net.toUri
@@ -25,6 +24,7 @@ import com.group2.concord_messenger.dialogs.AudioDialog
 import com.group2.concord_messenger.model.ChatMessageListAdapter
 import com.group2.concord_messenger.model.ConcordMessage
 import com.group2.concord_messenger.model.UserProfile
+import com.group2.concord_messenger.utils.checkAudioFilePaths
 import com.group2.concord_messenger.utils.checkPermissions
 import java.io.File
 
@@ -169,7 +169,6 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
             // Add adapter (with messages) to the RecyclerView
             messageRecycler.layoutManager = LinearLayoutManager(this)
             messageRecycler.adapter = messageAdapter
-//            messageAdapter!!.setMediaPlayer(mp)
             messageAdapter!!.startListening()
 
             sendBtn.setOnClickListener {
@@ -228,16 +227,8 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
                         .addOnSuccessListener { taskSnapshot ->
                         }
                     // save the audio file in permanent local storage so it doesn't need to be fetched from Firebase everytime the chat is opened
+                    checkAudioFilePaths(this)
                     val persistentAudioFile = File(this.filesDir, "audio/${audioFileName}")
-                    // check that audio directory and file do not exist
-                    if (!persistentAudioFile.exists()) {
-                        persistentAudioFile.createNewFile()
-                    }
-                    // check that audio directory and file do not exist
-                    val audioDir = File("${this.filesDir}/audio/")
-                    if (!audioDir.exists()) {
-                        audioDir.mkdir()
-                    }
                     if (!persistentAudioFile.exists()) {
                         persistentAudioFile.createNewFile()
                     }

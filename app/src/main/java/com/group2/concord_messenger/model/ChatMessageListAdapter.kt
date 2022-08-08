@@ -16,14 +16,13 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import com.group2.concord_messenger.ChatAudioPlayer
 import com.group2.concord_messenger.R
+import com.group2.concord_messenger.utils.FIREBASE_STORAGE_AUDIO_REPO
+import com.group2.concord_messenger.utils.checkAudioFilePaths
 import java.io.File
 import java.text.SimpleDateFormat
 
-const val FIREBASE_STORAGE_AUDIO_REPO = "gs://concord-messenger.appspot.com/audio/"
 
 // TODO: update the "Enter Message" size to account for the new attachment button
-// TODO: update audio player styling
-// TODO: when the binding happens stuff gets weird if scrolled
 class ChatMessageListAdapter(private val fromUid: String, private val recyclerView: RecyclerView,
                              options: FirestoreRecyclerOptions<ConcordMessage>
 ) : FirestoreRecyclerAdapter<ConcordMessage, RecyclerView.ViewHolder>(options) {
@@ -129,16 +128,13 @@ class SentMessageHolder(itemView: View) :
             timeText.text = timeString
             dateText.text = dateString
         }
-        // TODO: extract this into its own helper function?
+
         if (message.audio) {
             // if audio file is not saved locally fetch from Firebase and save locally
             val audioFile = File("${itemView.context.filesDir}/audio/$messageId.3gp")
             if (!audioFile.exists() || audioFile.length() <= 0) {
                 progressBar.visibility = View.VISIBLE
-                val audioDir = File("${itemView.context.filesDir}/audio/")
-                if (!audioDir.exists()) {
-                    audioDir.mkdir()
-                }
+                checkAudioFilePaths(itemView.context)
                 audioFile.createNewFile()
                 val storage = Firebase.storage
                 val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_AUDIO_REPO$messageId.3gp")
@@ -199,9 +195,6 @@ class SentMessageHolder(itemView: View) :
     fun unbind() {
         // For now if, to eliminate the error of a audio message playing that gets recycled acting
         // weird, stop the player on unbind
-        playAudio.visibility = View.VISIBLE
-        pauseAudio.visibility = View.GONE
-        audioSeekBar.progress = 0
         ap.onUnbind()
     }
 }
@@ -248,10 +241,7 @@ class ReceivedMessageHolder(itemView: View) :
             val audioFile = File("${itemView.context.filesDir}/audio/$messageId.3gp")
             if (!audioFile.exists() || audioFile.length() <= 0) {
                 progressBar.visibility = View.VISIBLE
-                val audioDir = File("${itemView.context.filesDir}/audio/")
-                if (!audioDir.exists()) {
-                    audioDir.mkdir()
-                }
+                checkAudioFilePaths(itemView.context)
                 audioFile.createNewFile()
                 val storage = Firebase.storage
                 val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_AUDIO_REPO$messageId.3gp")
@@ -292,14 +282,12 @@ class ReceivedMessageHolder(itemView: View) :
             pauseAudio.visibility = View.GONE
             audioSeekBar.visibility = View.GONE
             progressBar.visibility = View.GONE
+            messageText.text = ""
         }
     }
     fun unbind() {
         // For now if, to eliminate the error of a audio message playing that gets recycled acting
         // weird, stop the player on unbind
-        playAudio.visibility = View.VISIBLE
-        pauseAudio.visibility = View.GONE
-        audioSeekBar.progress = 0
         ap.onUnbind()
     }
 }
