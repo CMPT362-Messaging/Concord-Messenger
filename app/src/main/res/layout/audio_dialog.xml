@@ -1,5 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
@@ -12,63 +12,35 @@
         android:src="@drawable/ic_baseline_fiber_manual_record_32"
         android:visibility="visible"/>
     <ImageButton
-        android:id="@+id/play_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_baseline_play_arrow_32"
-        android:visibility="gone"/>
-    <ImageButton
         android:id="@+id/stop_record_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_baseline_stop_circle_32"
         android:visibility="gone"/>
     <ImageButton
-        android:id="@+id/stop_play_button"
+        android:id="@+id/pause_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_baseline_pause_32"
         android:visibility="gone"/>
-
-<!--    <RelativeLayout-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:gravity="center">-->
-<!--        <TextView-->
-<!--            android:id="@+id/iso_desc"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="sdfsdf"-->
-<!--            android:layout_alignTop="@+id/iso_input"-->
-<!--            android:layout_alignStart="@+id/iso_input"/>-->
-<!--        <NumberPicker-->
-<!--            android:id="@+id/iso_input"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_margin="20dp"/>-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/exp_desc"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="sdfdsf"-->
-<!--            android:layout_alignTop="@+id/max_exposures_input"-->
-<!--            android:layout_alignStart="@+id/max_exposures_input"/>-->
-<!--        <NumberPicker-->
-<!--            android:id="@+id/max_exposures_input"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_margin="20dp"-->
-<!--            android:layout_toEndOf="@id/iso_input"/>-->
-<!--    </RelativeLayout>-->
-
-<!--    <EditText-->
-<!--        android:id="@+id/description_input"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginLeft="20dp"-->
-<!--        android:layout_marginRight="20dp"-->
-<!--        android:hint="dsfsdf"-->
-<!--        android:inputType="textMultiLine"-->
-<!--        android:autofillHints="none" />-->
+    <ImageButton
+        android:id="@+id/play_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_baseline_play_arrow_32"
+        android:visibility="gone"/>
+    <SeekBar
+        android:id="@+id/audio_seek"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_gravity="center_horizontal"
+        android:minWidth="150dp"/>
+    <TextView
+        android:id="@+id/duration_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:textColor="#ffffff"
+        android:textSize="16sp" />
 </LinearLayout>

@@ -155,7 +155,21 @@ class SentMessageHolder(itemView: View) :
                     messageText.text = "$durationMs ms"
                     metaData.release()
                     audioSeekBar.max = durationMs!!.toInt()
+                }.removeOnFailureListener {
+                    gsReference.getFile(audioFile.toUri()).addOnSuccessListener {
+                        progressBar.visibility = View.GONE
+                        playAudio.visibility = View.VISIBLE
+                        audioSeekBar.visibility = View.VISIBLE
+                        // Set duration
+                        val metaData  = MediaMetadataRetriever()
+                        metaData.setDataSource(audioFile.toString())
+                        val durationMs = metaData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                        messageText.text = "$durationMs ms"
+                        metaData.release()
+                        audioSeekBar.max = durationMs!!.toInt()
+                    }
                 }
+
             } else {
                 playAudio.visibility = View.VISIBLE
                 audioSeekBar.visibility = View.VISIBLE
@@ -186,10 +200,10 @@ class SentMessageHolder(itemView: View) :
     fun unbind() {
         // For now if, to eliminate the error of a audio message playing that gets recycled acting
         // weird, stop the player on unbind
-        playAudio.visibility = View.GONE
-        pauseAudio.visibility = View.GONE
-        audioSeekBar.visibility = View.GONE
-        progressBar.visibility = View.GONE
+//        playAudio.visibility = View.GONE
+//        pauseAudio.visibility = View.GONE
+//        audioSeekBar.visibility = View.GONE
+//        progressBar.visibility = View.GONE
         audioSeekBar.progress = 0
         ap.onUnbind()
     }
@@ -284,10 +298,10 @@ class ReceivedMessageHolder(itemView: View) :
     fun unbind() {
         // For now if, to eliminate the error of a audio message playing that gets recycled acting
         // weird, stop the player on unbind
-        playAudio.visibility = View.GONE
-        pauseAudio.visibility = View.GONE
-        audioSeekBar.visibility = View.GONE
-        progressBar.visibility = View.GONE
+//        playAudio.visibility = View.GONE
+//        pauseAudio.visibility = View.GONE
+//        audioSeekBar.visibility = View.GONE
+//        progressBar.visibility = View.GONE
         audioSeekBar.progress = 0
     }
 }

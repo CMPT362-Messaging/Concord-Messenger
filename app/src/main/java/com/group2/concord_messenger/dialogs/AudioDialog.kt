@@ -4,30 +4,33 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.media.MediaPlayer
+import android.media.MediaMetadataRetriever
 import android.media.MediaRecorder
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
+import android.widget.SeekBar
+import android.widget.TextView
 import androidx.fragment.app.DialogFragment
+import com.group2.concord_messenger.ChatAudioPlayer
 import com.group2.concord_messenger.R
 import java.io.File
 import java.io.IOException
 
-// TODO: there is no pause.
-// TODO: if this gets cancelled there are major crashing issues
 class AudioDialog : DialogFragment() {
     internal lateinit var listener: AudioDialogListener
 
     private var fileName: String = ""
 
-    private var recordButton: ImageButton? = null
+    private lateinit var recordButton: ImageButton
     private var recorder: MediaRecorder? = null
 
-    private var playButton: ImageButton? = null
-    private var stopButton: ImageButton? = null
-    private var stopPlayButton: ImageButton? = null
-    private var player: MediaPlayer? = null
+    private lateinit var playButton: ImageButton
+    private lateinit var stopButton: ImageButton
+    private lateinit var pauseButton: ImageButton
+    private lateinit var seekBar: SeekBar
+    private lateinit var durationText: TextView
+    private lateinit var ap: ChatAudioPlayer
 
 
     interface AudioDialogListener {
@@ -39,18 +42,17 @@ class AudioDialog : DialogFragment() {
         super.onAttach(context)
                 // Verify that the host activity implements the callback interface
         try {
-            // Instantiate the NoticeDialogListener so we can send events to the host
+            // Instantiate the AudioDialogListener so we can send events to the host
             listener = context as AudioDialogListener
         } catch (e: ClassCastException) {
             // The activity doesn't implement the interface, throw exception
             throw ClassCastException((context.toString() +
-                    " must implement PickPhotoListener"))
+                    " must implement AudioDialogListener"))
         }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
-            // Use the Builder class for convenient dialog construction
             val builder = AlertDialog.Builder(it)
 
             val inflater = requireActivity().layoutInflater
@@ -61,77 +63,67 @@ class AudioDialog : DialogFragment() {
                         DialogInterface.OnClickListener { dialog, id ->
                             recorder?.release()
                             recorder = null
-                            player?.release()
-                            player = null
                             listener.onAudioComplete(this, fileName)
                         })
                 .setNeutralButton("Cancel",
                     DialogInterface.OnClickListener { dialog, id ->
                         // Do nothing
                         recorder?.release()
-                        recorder = null
-                        player?.release()
-                        player = null
                     })
 
             val outputDir: File = requireContext().cacheDir
             fileName = "${outputDir}/temp-audio.3gp"
 
-            recordButton = view?.findViewById(R.id.record_button)
-            playButton = view?.findViewById(R.id.play_button)
-            stopButton = view?.findViewById(R.id.stop_record_button)
-            stopPlayButton = view?.findViewById(R.id.stop_play_button)
-            recordButton?.setOnClickListener {
+            recordButton = view.findViewById(R.id.record_button)
+            playButton = view.findViewById(R.id.play_button)
+            stopButton = view.findViewById(R.id.stop_record_button)
+            pauseButton = view.findViewById(R.id.pause_button)
+            durationText = view.findViewById(R.id.duration_text)
+            seekBar = view.findViewById(R.id.audio_seek)
+            ap = ChatAudioPlayer()
+
+            recordButton.setOnClickListener {
                 recorder = MediaRecorder().apply {
                     setAudioSource(MediaRecorder.AudioSource.MIC)
                     setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
                     setOutputFile(fileName)
                     setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-
                     try {
                         prepare()
                     } catch (e: IOException) {
                         println("ERROR")
                         println(e)
                     }
-                    recordButton?.visibility = View.GONE
-                    stopButton?.visibility = View.VISIBLE
-                    playButton?.visibility = View.GONE
+                    recordButton.visibility = View.GONE
+                    stopButton.visibility = View.VISIBLE
+                    playButton.visibility = View.GONE
                     start()
                 }
             }
-            playButton?.setOnClickListener {
-                player = MediaPlayer().apply {
-                    try {
-                        setDataSource(fileName)
-                        prepare()
-                        playButton?.visibility = View.GONE
-                        stopPlayButton?.visibility = View.VISIBLE
-                        start()
-                    } catch (e: IOException) {
-                        println("prepare() failed")
-                    }
-                }
-                player?.setOnCompletionListener {
-                    playButton?.visibility = View.VISIBLE
-                    stopPlayButton?.visibility = View.GONE
-                }
-
+            playButton.setOnClickListener {
+                ap.claim(durationText, playButton, pauseButton,seekBar, 0)
+                ap.play(File(fileName))
             }
-            stopPlayButton?.setOnClickListener {
-                player?.release()
-                player = null
-                stopPlayButton?.visibility = View.GONE
-                playButton?.visibility = View.VISIBLE
+            pauseButton.setOnClickListener {
+                ap.pause()
             }
-            stopButton?.setOnClickListener {
+            stopButton.setOnClickListener {
                 recorder?.apply {
                     stop()
                     release()
                 }
-                recordButton?.visibility = View.VISIBLE
-                stopButton?.visibility = View.GONE
-                playButton?.visibility = View.VISIBLE
+                recordButton.visibility = View.VISIBLE
+                stopButton.visibility = View.GONE
+                playButton.visibility = View.VISIBLE
+                seekBar.visibility = View.VISIBLE
+                durationText.visibility = View.VISIBLE
+                // Set duration
+                val metaData  = MediaMetadataRetriever()
+                metaData.setDataSource(fileName)
+                val durationMs = metaData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                durationText.text = "$durationMs ms"
+                metaData.release()
+                seekBar.max = durationMs!!.toInt()
                 recorder = null
             }
 
@@ -144,7 +136,6 @@ class AudioDialog : DialogFragment() {
         super.onStop()
         recorder?.release()
         recorder = null
-        player?.release()
-        player = null
+        ap.onDestroy()
     }
 }
