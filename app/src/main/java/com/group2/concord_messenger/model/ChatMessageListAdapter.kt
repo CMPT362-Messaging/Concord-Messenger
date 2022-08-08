@@ -1,12 +1,6 @@
 package com.group2.concord_messenger.model
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
-import android.media.ExifInterface
 import android.media.MediaMetadataRetriever
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,13 +14,11 @@ import com.google.firebase.storage.ktx.storage
 import com.group2.concord_messenger.ChatAudioPlayer
 import com.group2.concord_messenger.R
 import com.group2.concord_messenger.utils.FIREBASE_STORAGE_AUDIO_REPO
+import com.group2.concord_messenger.utils.FIREBASE_STORAGE_PHOTO_SHARING_REPO
 import com.group2.concord_messenger.utils.checkAudioFilePaths
+import com.group2.concord_messenger.utils.getBitmap
 import java.io.File
-import java.io.IOException
 import java.text.SimpleDateFormat
-
-const val FIREBASE_STORAGE_AUDIO_REPO = "gs://concord-messenger.appspot.com/audio/"
-const val FIREBASE_STORAGE_PHOTO_SHARING_REPO = "gs://concord-messenger.appspot.com/photo-sharing/"
 
 // TODO: update the "Enter Message" size to account for the new attachment button
 class ChatMessageListAdapter(private val fromUid: String, private val recyclerView: RecyclerView,
@@ -215,25 +207,7 @@ class SentMessageHolder(itemView: View) :
         // For now if, to eliminate the error of a audio message playing that gets recycled acting
         // weird, stop the player on unbind
         ap.onUnbind()
-    }
-
-    fun getBitmap(context: Context, imgUri: Uri, imgPath: String): Bitmap {
-        val bitmap = BitmapFactory.decodeStream(context.contentResolver.openInputStream(imgUri))
-        val matrix = Matrix()
-        var rotate = 0f
-        try {
-            val exif = ExifInterface(imgPath)
-            val orientation: String? = exif.getAttribute(ExifInterface.TAG_ORIENTATION)
-            when(orientation) {
-                "6" -> rotate = 90f
-                "8" -> rotate = 270f
-                "3" -> rotate = 180f
-            }
-        } catch(e: IOException) {
-            e.printStackTrace()
-        }
-        matrix.setRotate(rotate)
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        image.visibility = View.GONE
     }
 }
 
@@ -355,24 +329,6 @@ class ReceivedMessageHolder(itemView: View) :
         // For now if, to eliminate the error of a audio message playing that gets recycled acting
         // weird, stop the player on unbind
         ap.onUnbind()
-    }
-
-    fun getBitmap(context: Context, imgUri: Uri, imgPath: String): Bitmap {
-        val bitmap = BitmapFactory.decodeStream(context.contentResolver.openInputStream(imgUri))
-        val matrix = Matrix()
-        var rotate = 0f
-        try {
-            val exif = ExifInterface(imgPath)
-            val orientation: String? = exif.getAttribute(ExifInterface.TAG_ORIENTATION)
-            when(orientation) {
-                "6" -> rotate = 90f
-                "8" -> rotate = 270f
-                "3" -> rotate = 180f
-            }
-        } catch(e: IOException) {
-            e.printStackTrace()
-        }
-        matrix.setRotate(rotate)
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        image.visibility = View.GONE
     }
 }

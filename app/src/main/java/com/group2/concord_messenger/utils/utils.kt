@@ -13,10 +13,11 @@ import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.io.File
+import java.io.IOException
 
 // "GLOBALS"
 const val FIREBASE_STORAGE_AUDIO_REPO = "gs://concord-messenger.appspot.com/audio/"
-import java.io.IOException
+const val FIREBASE_STORAGE_PHOTO_SHARING_REPO = "gs://concord-messenger.appspot.com/photo-sharing/"
 
 // https://developer.android.com/training/location/permissions
 fun checkPermissions(activity: Activity?) {
