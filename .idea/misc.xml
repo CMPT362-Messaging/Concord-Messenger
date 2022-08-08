@@ -4,9 +4,9 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/sashs/OneDrive/Desktop/sfu/2022 summer/cmpt 362/group project/app/src/main/res/layout/activity_chat.xml" value="0.16666666666666666" />
+        <entry key="..\:/Users/sashs/OneDrive/Desktop/sfu/2022 summer/cmpt 362/group project/app/src/main/res/layout/activity_chat_list.xml" value="0.1" />
         <entry key="..\:/Users/sashs/OneDrive/Desktop/sfu/2022 summer/cmpt 362/group project/app/src/main/res/layout/activity_contacts.xml" value="0.16666666666666666" />
         <entry key="..\:/Users/sashs/OneDrive/Desktop/sfu/2022 summer/cmpt 362/group project/app/src/main/res/layout/activity_contacts_list_item.xml" value="0.18802083333333333" />
-        <entry key="..\:/Users/sashs/OneDrive/Desktop/sfu/2022 summer/cmpt 362/group project/app/src/main/res/layout/contact.xml" value="0.1" />
         <entry key="..\:/Users/sashs/OneDrive/Desktop/sfu/2022 summer/cmpt 362/group project/app/src/main/res/layout/message_me.xml" value="0.11828774062816616" />
         <entry key="..\:/Users/sashs/OneDrive/Desktop/sfu/2022 summer/cmpt 362/group project/app/src/main/res/layout/message_other.xml" value="0.11828774062816616" />
         <entry key="app/src/main/res/layout/activity_chat.xml" value="0.328804347826087" />
@@ -20,7 +20,7 @@
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_16" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_16_PREVIEW" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

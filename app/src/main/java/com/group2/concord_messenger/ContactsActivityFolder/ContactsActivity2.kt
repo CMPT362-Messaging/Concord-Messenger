@@ -4,12 +4,9 @@ import android.content.Intent
 import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.ListView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.firebase.ui.auth.data.model.User
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.group2.concord_messenger.ChatActivity
@@ -19,7 +16,7 @@ import com.group2.concord_messenger.R
 import com.group2.concord_messenger.model.UserProfile
 import java.lang.Thread.sleep
 
-class ContactsActivity : AppCompatActivity() {
+class ContactsActivity2 : AppCompatActivity() {
     private lateinit var fsDb: FirebaseFirestore
     private var fromUser: UserProfile? = null
 
@@ -36,7 +33,7 @@ class ContactsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_contacts)
+        setContentView(R.layout.activity_contacts2)
         recyclerView = findViewById(R.id.contacts_recyclerView)
 
         ConcordDatabase.getCurrentUser {
