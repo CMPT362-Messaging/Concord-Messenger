@@ -121,7 +121,7 @@ class AudioDialog : DialogFragment() {
                 val metaData  = MediaMetadataRetriever()
                 metaData.setDataSource(fileName)
                 val durationMs = metaData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                durationText.text = "$durationMs ms"
+                durationText.text = "%.2f s".format((durationMs?.toInt()?.div(1000.0)))
                 metaData.release()
                 seekBar.max = durationMs!!.toInt()
                 recorder = null

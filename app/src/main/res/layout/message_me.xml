@@ -46,7 +46,10 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:visibility="gone"
-                android:src="@drawable/ic_baseline_play_circle_24"
+                android:minWidth="15dp"
+                android:minHeight="15dp"
+                android:src="@drawable/ic_baseline_play_circle_32"
+                style="?android:attr/borderlessButtonStyle"
                 />
             <ImageButton
                 android:id="@+id/pause_audio_button_me"
@@ -54,7 +57,10 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:visibility="gone"
-                android:src="@drawable/ic_baseline_pause_circle_24"
+                android:minWidth="15dp"
+                android:minHeight="15dp"
+                android:src="@drawable/ic_baseline_pause_circle_32"
+                style="?android:attr/borderlessButtonStyle"
                 />
             <SeekBar
                 android:id="@+id/audio_seek_me"
@@ -78,9 +84,10 @@
                 android:layout_marginBottom="8dp"
                 android:maxWidth="260dp"
                 android:paddingLeft="12dp"
-                android:paddingTop="8dp"
+                android:paddingTop="10dp"
                 android:paddingRight="12dp"
                 android:text="This is a Message"
+                android:layout_gravity="center_vertical"
                 android:textColor="#ffffff"
                 android:textSize="16sp" />
         </LinearLayout>
