@@ -60,7 +60,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
         fsDb = FirebaseFirestore.getInstance()
-        val toolBar = findViewById<Toolbar>(R.id.toolbar_gchannel)
+        val toolBar = findViewById<Toolbar>(R.id.contacts_toolbar)
 
         editText = findViewById(R.id.edit_gchat_message)
         sendBtn = findViewById(R.id.button_gchat_send)
@@ -115,6 +115,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
 
             updateCurrentUser()
         }
+
         attachButton.setOnClickListener {
             checkPermissions(this)
             val dia = AudioDialog()
@@ -138,6 +139,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
                     sendMessage(message, file)
                 }
             }
+
 
         profileButton = findViewById(R.id.profile_button)
         profileButton.setOnClickListener {
