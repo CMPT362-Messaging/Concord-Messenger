@@ -2,13 +2,17 @@ package com.group2.concord_messenger
 
 import android.content.ContentValues.TAG
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,15 +25,18 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import com.group2.concord_messenger.ContactsActivityFolder.ContactsActivityAdapter
+import com.group2.concord_messenger.dialogs.AttachPictureDialog
 import com.group2.concord_messenger.dialogs.AudioDialog
 import com.group2.concord_messenger.model.ChatMessageListAdapter
 import com.group2.concord_messenger.model.ConcordMessage
 import com.group2.concord_messenger.model.UserProfile
 import com.group2.concord_messenger.utils.checkPermissions
 import java.io.File
+import java.util.*
+import kotlin.collections.ArrayList
 
 
-class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
+class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, AttachPictureDialog.ProfilePicturePickDialogListener {
     private lateinit var editText: EditText
     private lateinit var sendBtn: Button
 
@@ -50,6 +57,10 @@ class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
     private lateinit var profileButton: Button
     private lateinit var attachButton: ImageButton
     private lateinit var messageRecycler: RecyclerView
+    private lateinit var takePicture: ActivityResultLauncher<Uri>
+    private lateinit var photoButton: ImageButton
+
+
 
 
 
@@ -61,6 +72,7 @@ class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
         editText = findViewById(R.id.edit_gchat_message)
         sendBtn = findViewById(R.id.button_gchat_send)
         attachButton = findViewById(R.id.attachment_button)
+        photoButton = findViewById(R.id.photo_button)
 
         fromUser = intent.extras?.get("fromUser") as UserProfile
         groupId = intent.extras?.get("roomId") as String
@@ -73,6 +85,24 @@ class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
             val dia = AudioDialog()
             dia.show(supportFragmentManager, "audioPicker")
         }
+        photoButton.setOnClickListener {
+            checkPermissions(this)
+            val dialog = AttachPictureDialog()
+            dialog.show(supportFragmentManager, "picturePicker")
+        }
+
+        takePicture =
+            registerForActivityResult(ActivityResultContracts.TakePicture()) { success: Boolean ->
+                if (success) {
+                    val file = File(this.getExternalFilesDir(null), "pictureToShare.jpg")
+                    val message = ConcordMessage(fromUser.uId, fromUser.userName, editText.text.toString(),
+                        audio = false,
+                        image = true,
+                        imageName = UUID.randomUUID().toString()
+                    )
+                    sendMessage(message, file)
+                }
+            }
 
         profileButton = findViewById(R.id.profile_button)
         profileButton.setOnClickListener {
@@ -125,7 +155,7 @@ class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
             val options = FirestoreRecyclerOptions.Builder<ConcordMessage>()
                 .setQuery(query, ConcordMessage::class.java).build()
 
-            val messageRecycler: RecyclerView = findViewById(R.id.recycler_gchat)
+            messageRecycler = findViewById(R.id.recycler_gchat)
             messageAdapter = ChatMessageListAdapter(
                 fromUser.uId,
                 messageRecycler, options
@@ -170,7 +200,7 @@ class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
     }
 
 
-    private fun sendMessage(msg: ConcordMessage,  audioFile: File? = null) {
+    private fun sendMessage(msg: ConcordMessage,  fileToSend: File? = null) {
 
         // Add the message to the db
         // The actual message will be nested within
@@ -181,33 +211,46 @@ class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
         //              . . .
         //              |-> message_n
         // Currently a group only holds 2 people
-        fsDb.collection("messages").document(groupId)
-            .collection("groupMessages").add(msg).addOnSuccessListener {
-                // Upload the audio file to Firebase Storage
-                if (msg.audio) {
-                    val audioFileName = it.id + ".3gp"  // each message is limited to one audio recording
-                    val storage = Firebase.storage
-                    val imageRef = storage.reference.child("audio/${audioFileName}")
-                    imageRef.putFile(audioFile?.toUri()!!)
-                        .addOnSuccessListener { taskSnapshot ->
-                        }
-                    // save the audio file in permanent local storage so it doesn't need to be fetched from Firebase everytime the chat is opened
-                    val persistentAudioFile = File(this.filesDir, "audio/${audioFileName}")
-                    // check that audio directory and file do not exist
-                    if (!persistentAudioFile.exists()) {
-                        persistentAudioFile.createNewFile()
-                    }
-                    // check that audio directory and file do not exist
-                    val audioDir = File("${this.filesDir}/audio/")
-                    if (!audioDir.exists()) {
-                        audioDir.mkdir()
-                    }
-                    if (!persistentAudioFile.exists()) {
-                        persistentAudioFile.createNewFile()
-                    }
-                    audioFile.copyTo(persistentAudioFile, overwrite = true)
+        if (msg.image) {
+            val imageFileName = msg.imageName + ".jpg"  // one image per message
+            val storage = Firebase.storage
+            val imageRef = storage.reference.child("photo-sharing/${imageFileName}")
+            val uri = FileProvider.getUriForFile(this, "com.group2.concord_messenger", fileToSend!!)
+            imageRef.putFile(uri)
+                .addOnSuccessListener { taskSnapshot ->
+                    fsDb.collection("messages").document(groupId)
+                        .collection("groupMessages").add(msg)
                 }
-            }
+        }else {
+            fsDb.collection("messages").document(groupId)
+                .collection("groupMessages").add(msg).addOnSuccessListener {
+                    // Upload the audio file to Firebase Storage
+                    if (msg.audio) {
+                        val audioFileName =
+                            it.id + ".3gp"  // each message is limited to one audio recording
+                        val storage = Firebase.storage
+                        val imageRef = storage.reference.child("audio/${audioFileName}")
+                        imageRef.putFile(fileToSend?.toUri()!!)
+                            .addOnSuccessListener { taskSnapshot ->
+                            }
+                        // save the audio file in permanent local storage so it doesn't need to be fetched from Firebase everytime the chat is opened
+                        val persistentAudioFile = File(this.filesDir, "audio/${audioFileName}")
+                        // check that audio directory and file do not exist
+                        if (!persistentAudioFile.exists()) {
+                            persistentAudioFile.createNewFile()
+                        }
+                        // check that audio directory and file do not exist
+                        val audioDir = File("${this.filesDir}/audio/")
+                        if (!audioDir.exists()) {
+                            audioDir.mkdir()
+                        }
+                        if (!persistentAudioFile.exists()) {
+                            persistentAudioFile.createNewFile()
+                        }
+                        fileToSend.copyTo(persistentAudioFile, overwrite = true)
+                    }
+                }
+        }
 
         fsDb.collection("messages").document(groupId)
             .collection("groupMessages").add(msg)
@@ -233,5 +276,10 @@ class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener {
         val message = ConcordMessage(fromUser.uId, fromUser.userName, editText.text.toString(), true)
         editText.text.clear()
         sendMessage(message, File(filename))
+    }
+
+    override fun onOpenCameraClick(dialog: DialogFragment) {
+        val uri = FileProvider.getUriForFile(this, "com.group2.concord_messenger", File(this.getExternalFilesDir(null), "pictureToShare.jpg"))
+        takePicture.launch(uri)
     }
 }
