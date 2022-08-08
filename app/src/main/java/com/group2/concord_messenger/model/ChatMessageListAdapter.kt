@@ -207,7 +207,7 @@ class SentMessageHolder(itemView: View) :
         // For now if, to eliminate the error of a audio message playing that gets recycled acting
         // weird, stop the player on unbind
         ap.onUnbind()
-        image.visibility = View.GONE
+//        image.visibility = View.GONE
     }
 }
 

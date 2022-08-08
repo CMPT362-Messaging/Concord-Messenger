@@ -92,8 +92,12 @@ class ChatAudioPlayer: SeekBar.OnSeekBarChangeListener {
     }
 
     fun onUnbind() {
-        onComplete()
-        unClaim()
+        if (claimed) {
+            onComplete()
+            playAudio.visibility = View.GONE
+            audioSeekBar.visibility = View.GONE
+            unClaim()
+        }
     }
 
     fun onDestroy() {
