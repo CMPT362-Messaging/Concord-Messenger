@@ -139,8 +139,6 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
                 }
             }
 
-        updateCurrentUser()
-
         profileButton = findViewById(R.id.profile_button)
         profileButton.setOnClickListener {
             val intent = Intent(this, UserProfileActivity::class.java)
@@ -247,8 +245,33 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
                     fsDb.collection("messages").document(groupId)
                         .collection("groupMessages").add(msg)
                 }
+        } else if (msg.audio) {
+            // Upload the audio file to Firebase Storage
+            msg.audioId = UUID.randomUUID().toString()
+            val audioFileName = msg.audioId + ".3gp"  // each message is limited to one audio recording
+            val storage = Firebase.storage
+            val audioRef = storage.reference.child("audio/${audioFileName}")
+            // save the audio file in permanent local storage so it doesn't need to be fetched from Firebase everytime the chat is opened
+            val persistentAudioFile = File(this.filesDir, "audio/${audioFileName}")
+            // check that audio directory and file do not exist
+            if (!persistentAudioFile.exists()) {
+                persistentAudioFile.createNewFile()
+            }
+            // check that audio directory and file do not exist
+            val audioDir = File("${this.filesDir}/audio/")
+            if (!audioDir.exists()) {
+                audioDir.mkdir()
+            }
+            if (!persistentAudioFile.exists()) {
+                persistentAudioFile.createNewFile()
+            }
+            fileToSend?.copyTo(persistentAudioFile, overwrite = true)
+            audioRef.putFile(persistentAudioFile.toUri())
+                .addOnSuccessListener { taskSnapshot ->
+                    fsDb.collection("messages").document(groupId)
+                        .collection("groupMessages").add(msg)
+                }
         } else {
-
             // Add the message to the db
             // The actual message will be nested within
             // messages
@@ -259,33 +282,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
             //              |-> message_n
             // Currently a group only holds 2 people
             fsDb.collection("messages").document(groupId)
-                .collection("groupMessages").add(msg).addOnSuccessListener {
-                    // Upload the audio file to Firebase Storage
-                    if (msg.audio) {
-                        val audioFileName =
-                            it.id + ".3gp"  // each message is limited to one audio recording
-                        val storage = Firebase.storage
-                        val imageRef = storage.reference.child("audio/${audioFileName}")
-                        imageRef.putFile(fileToSend?.toUri()!!)
-                            .addOnSuccessListener { taskSnapshot ->
-                            }
-                        // save the audio file in permanent local storage so it doesn't need to be fetched from Firebase everytime the chat is opened
-                        val persistentAudioFile = File(this.filesDir, "audio/${audioFileName}")
-                        // check that audio directory and file do not exist
-                        if (!persistentAudioFile.exists()) {
-                            persistentAudioFile.createNewFile()
-                        }
-                        // check that audio directory and file do not exist
-                        val audioDir = File("${this.filesDir}/audio/")
-                        if (!audioDir.exists()) {
-                            audioDir.mkdir()
-                        }
-                        if (!persistentAudioFile.exists()) {
-                            persistentAudioFile.createNewFile()
-                        }
-                        fileToSend.copyTo(persistentAudioFile, overwrite = true)
-                    }
-                }
+                .collection("groupMessages").add(msg)
         }
         // Add the message to the receiving user's inbox
         // A user's inbox is a collection of every message sent to them, used for notifications

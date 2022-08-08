@@ -127,6 +127,7 @@ class SentMessageHolder(itemView: View) :
     fun bind(message: ConcordMessage, messageId: String, ap: ChatAudioPlayer, position:Int) {
         this.ap = ap
         println("HOLDERPOSITION$position")
+
         messageText.text = message.text
         if (message.createdAt != null) {
             // Format time
@@ -137,10 +138,15 @@ class SentMessageHolder(itemView: View) :
             timeText.text = timeString
             dateText.text = dateString
         }
-        // TODO: extract this into its own helper function?
+
         if (message.audio) {
+            // This adds backwards compatibility for old audio messages before using a new UUID
+            var audioMessageId = message.audioId
+            if (audioMessageId == "") {
+                audioMessageId = messageId
+            }
             // if audio file is not saved locally fetch from Firebase and save locally
-            val audioFile = File("${itemView.context.filesDir}/audio/$messageId.3gp")
+            val audioFile = File("${itemView.context.filesDir}/audio/$audioMessageId.3gp")
             if (!audioFile.exists() || audioFile.length() <= 0) {
                 progressBar.visibility = View.VISIBLE
                 val audioDir = File("${itemView.context.filesDir}/audio/")
@@ -149,7 +155,7 @@ class SentMessageHolder(itemView: View) :
                 }
                 audioFile.createNewFile()
                 val storage = Firebase.storage
-                val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_AUDIO_REPO$messageId.3gp")
+                val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_AUDIO_REPO$audioMessageId.3gp")
                 gsReference.getFile(audioFile.toUri()).addOnSuccessListener {
                     println("Audio File Downloaded")
                     progressBar.visibility = View.GONE
@@ -193,7 +199,6 @@ class SentMessageHolder(itemView: View) :
             val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_PHOTO_SHARING_REPO${message.imageName}.jpg")
             gsReference.getFile(imageFile.toUri()).addOnSuccessListener {
                 println("Image File Downloaded")
-                println("${messageId}.jpg")
                 val bitmap = getBitmap(itemView.context, imageFile.toUri(), imageFile.path)
                 image.setImageBitmap(bitmap)
                 image.visibility = View.VISIBLE
@@ -278,8 +283,13 @@ class ReceivedMessageHolder(itemView: View) :
         }
 
         if (message.audio) {
+            // This adds backwards compatibility for old audio messages before using a new UUID
+            var audioMessageId = message.audioId
+            if (audioMessageId == "") {
+                audioMessageId = messageId
+            }
             // if audio file is not saved locally fetch from Firebase and save locally
-            val audioFile = File("${itemView.context.filesDir}/audio/$messageId.3gp")
+            val audioFile = File("${itemView.context.filesDir}/audio/$audioMessageId.3gp")
             if (!audioFile.exists() || audioFile.length() <= 0) {
                 progressBar.visibility = View.VISIBLE
                 val audioDir = File("${itemView.context.filesDir}/audio/")
@@ -288,7 +298,7 @@ class ReceivedMessageHolder(itemView: View) :
                 }
                 audioFile.createNewFile()
                 val storage = Firebase.storage
-                val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_AUDIO_REPO$messageId.3gp")
+                val gsReference = storage.getReferenceFromUrl("$FIREBASE_STORAGE_AUDIO_REPO$audioMessageId.3gp")
                 gsReference.getFile(audioFile.toUri()).addOnSuccessListener {
                     println("Audio File Downloaded")
                     progressBar.visibility = View.GONE
@@ -334,7 +344,6 @@ class ReceivedMessageHolder(itemView: View) :
 
             gsReference.getFile(imageFile.toUri()).addOnSuccessListener {
                 println("Image File Downloaded")
-                println("${messageId}.jpg")
                 val bitmap = getBitmap(itemView.context, imageFile.toUri(), imageFile.path)
                 image.setImageBitmap(bitmap)
                 image.visibility = View.VISIBLE
