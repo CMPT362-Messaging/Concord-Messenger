@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
+import android.widget.ImageButton
 import android.widget.ListView
 import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
@@ -29,6 +30,7 @@ class ChatListActivity : AppCompatActivity() {
     private lateinit var chatsListView: ListView
     private var chatListAdapter: ArrayAdapter<String>? = null
     private lateinit var fab: FloatingActionButton
+    private lateinit var profileButton: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +39,7 @@ class ChatListActivity : AppCompatActivity() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar_chat_list)
         setSupportActionBar(toolbar)
         fab = findViewById(R.id.fab)
+        profileButton = findViewById(R.id.profile_button)
 
         // Get the Firestore instance, which holds all users, messages, and groups
         fsDb = FirebaseFirestore.getInstance()
@@ -81,6 +84,11 @@ class ChatListActivity : AppCompatActivity() {
                         }
                     }
                 }
+            }
+            profileButton.setOnClickListener{
+                val intent = Intent(this, UserProfileActivity::class.java)
+                intent.putExtra("user", fromUser)
+                startActivity(intent)
             }
         }
     }
