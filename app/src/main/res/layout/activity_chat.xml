@@ -68,7 +68,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-<!--        TODO Update to be a nice icon, maybe use a spinner-->
         <ImageButton
             android:id="@+id/attachment_button"
             android:layout_width="wrap_content"
@@ -94,6 +93,7 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
             android:layout_toEndOf="@+id/photo_button"
+            android:layout_toStartOf="@+id/button_gchat_send"
             android:background="@android:color/transparent"
             android:hint="Enter Message"
             android:inputType="textCapSentences|textMultiLine"

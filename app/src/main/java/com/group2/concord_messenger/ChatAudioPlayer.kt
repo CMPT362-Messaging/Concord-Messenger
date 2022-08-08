@@ -49,7 +49,7 @@ class ChatAudioPlayer: SeekBar.OnSeekBarChangeListener {
                     while (true) {
                         yield()
                         audioSeekBar.progress = mp.currentPosition
-                        messageText.text = "${duration.minus(mp.currentPosition)} ms"
+                        messageText.text = "%.2f s".format((duration.minus(mp.currentPosition) / 1000.0))
                         delay(25)
                     }
                 } catch (e: IllegalStateException) {
@@ -86,18 +86,36 @@ class ChatAudioPlayer: SeekBar.OnSeekBarChangeListener {
             pauseAudio.visibility = View.GONE
             audioSeekBar.progress = 0
             seekBarUpdateJob?.cancel()
-            messageText.text = "$duration ms"
+            messageText.text = "%.2f s".format((duration / 1000.0))
             audioSeekBar.setOnSeekBarChangeListener(null)
         }
     }
 
     fun onUnbind() {
-        onComplete()
+        if (claimed) {
+            onComplete()
+            playAudio.visibility = View.GONE
+            audioSeekBar.visibility = View.GONE
+            messageText.text = ""
+            unClaim()
+        }
+    }
+
+    fun onDestroy() {
+        mp.release()
+    }
+
+    fun getMediaPlayer(): MediaPlayer {
+        return mp
+    }
+
+    fun unClaim() {
+        claimed = false
     }
 
     override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
         if (p2) {
-            messageText.text = "${p0?.max?.minus(p1)} ms"
+            messageText.text = "%.2f s".format((p0?.max?.minus(p1)?.div(1000.0)))
         }
     }
 
