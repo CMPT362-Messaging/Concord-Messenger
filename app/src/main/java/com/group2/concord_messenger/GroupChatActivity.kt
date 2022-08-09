@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -13,7 +14,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.FileProvider
-import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,6 +25,7 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
+import com.group2.concord_messenger.ContactsActivityFolder.ContactsActivityAdapter
 import com.group2.concord_messenger.dialogs.AttachPictureDialog
 import com.group2.concord_messenger.dialogs.AudioDialog
 import com.group2.concord_messenger.model.ChatMessageListAdapter
@@ -34,88 +35,56 @@ import com.group2.concord_messenger.utils.checkAudioFilePaths
 import com.group2.concord_messenger.utils.checkPermissions
 import java.io.File
 import java.util.*
+import kotlin.collections.ArrayList
 
-class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, AttachPictureDialog.ProfilePicturePickDialogListener {
+
+class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, AttachPictureDialog.ProfilePicturePickDialogListener {
     private lateinit var editText: EditText
     private lateinit var sendBtn: Button
-    private lateinit var attachButton: ImageButton
-    private lateinit var photoButton: ImageButton
+
     // The Firestore database where all messages will be added
     private lateinit var fsDb: FirebaseFirestore
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var fromUser: UserProfile // i.e., you
-    private lateinit var toUser: UserProfile
+    private lateinit var toUser: ArrayList<UserProfile>
+
     // Groups the users are a part of (may need to update if this is a new chat)
     private var fromGroups: MutableMap<String, Any>? = null
     private var toGroups: MutableMap<String, Any>? = null
+
     // Id of this chat group (for now this group only has two people)
     private var groupId: String = ""
     private var messageAdapter: ChatMessageListAdapter? = null
-    private lateinit var messageRecycler: RecyclerView
 
     private lateinit var profileButton: Button
-
+    private lateinit var attachButton: ImageButton
+    private lateinit var messageRecycler: RecyclerView
     private lateinit var takePicture: ActivityResultLauncher<Uri>
+    private lateinit var photoButton: ImageButton
+
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
         fsDb = FirebaseFirestore.getInstance()
-        val toolBar = findViewById<Toolbar>(R.id.contacts_toolbar)
 
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         editText = findViewById(R.id.edit_gchat_message)
         sendBtn = findViewById(R.id.button_gchat_send)
         attachButton = findViewById(R.id.attachment_button)
         photoButton = findViewById(R.id.photo_button)
 
-        // If ChatActivity is being launched from a notification we will get all message
-        // data from the intent extras
-        val bundle = intent.extras
-        if (bundle?.getString("senderId") != null) {
-            ConcordDatabase.getCurrentUser {
-                if (it != null) {
-                    fromUser = it
-                    val senderId = bundle.getString("senderId")
-                    val recipientId = bundle.getString("recipientId")
-                    if (recipientId != fromUser.uId) {
-                        // This message is not for the currently logged in user
-                        // Simply end the activity
-                        finish()
-                    }
-                    val senderRef = fsDb.collection("users").document(senderId!!)
-                    senderRef.get().addOnCompleteListener { snap ->
-                        if(snap.isSuccessful && snap.result.exists()) {
-                            toUser = snap.result.toObject(UserProfile::class.java)!!
-                            toolBar.title = toUser.userName
-                            fromGroups = fromUser.groups
-                            toGroups = toUser.groups
-                            groupId = "none"
-                            updateCurrentUser()
-                        }
-                        else {
-                            Log.println(Log.DEBUG, "MyFirebaseMessagingService",
-                                "Query for sender user was not successful")
-                        }
-                    }
-                } else {
-                    // User is not logged in, notification is old
-                    // Take the user to the login page just to be nice
-                    val intent = Intent(this, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                }
-            }
-        } else {
-            fromUser = intent.extras?.get("fromUser") as UserProfile
-            toUser = intent.extras?.get("toUser") as UserProfile
-            // Set the title of the chat to the toUser's name
-            toolBar.title = toUser.userName
-            fromGroups = fromUser.groups
-            toGroups = toUser.groups
-            groupId = intent.extras?.get("roomId") as String
+        fromUser = intent.extras?.get("fromUser") as UserProfile
+        groupId = intent.extras?.get("roomId") as String
+        setTitleFromGroup(groupId)
 
-            updateCurrentUser()
-        }
+        profileButton.findViewById<Button>(R.id.profile_button)
+        profileButton.visibility = View.GONE
+
+        updateCurrentUser()
 
         attachButton.setOnClickListener {
             checkPermissions(this)
@@ -141,12 +110,6 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
                 }
             }
 
-        profileButton = findViewById(R.id.profile_button)
-        profileButton.setOnClickListener {
-            val intent = Intent(this, UserProfileActivity::class.java)
-            intent.putExtra("user", toUser)
-            startActivity(intent)
-        }
     }
 
     private fun updateCurrentUser() {
@@ -193,50 +156,61 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
                 .setQuery(query, ConcordMessage::class.java).build()
 
             messageRecycler = findViewById(R.id.recycler_gchat)
-            messageAdapter = ChatMessageListAdapter(fromUser.uId,
-                messageRecycler, options)
+            messageAdapter = ChatMessageListAdapter(
+                fromUser.uId,
+                messageRecycler, options
+            )
             // Add adapter (with messages) to the RecyclerView
             messageRecycler.layoutManager = LinearLayoutManager(this)
             messageRecycler.adapter = messageAdapter
-
             messageAdapter!!.startListening()
 
             sendBtn.setOnClickListener {
-                val message = ConcordMessage(fromUser.uId, fromUser.userName,editText.text.toString())
+                val message =
+                    ConcordMessage(fromUser.uId, fromUser.userName, editText.text.toString())
                 editText.text.clear()
                 sendMessage(message)
             }
         }
     }
 
-    private fun sendMessage(msg: ConcordMessage, fileToSend: File? = null) {
-        if (fromGroups == null) {
-            fromGroups = mutableMapOf()
-        }
-        // Indicate that this user is apart of this chat group
-        fromGroups!![groupId] = true
-        fromUser.groups = fromGroups
-        // Write this new data to the db
-        fsDb.collection("users").document(fromUser.uId)
-            .set(fromUser, SetOptions.merge())
-        fsDb.collection("groups").document(fromUser.uId)
-            .collection("userGroups").document(groupId).set(toUser, SetOptions.merge())
+    private fun setTitleFromGroup(groupId : String) {
+        val fsDb = FirebaseFirestore.getInstance()
+        val uIRef = fsDb.collection("MultipleUserGroup").document(groupId)
+        var groupName = ""
+        uIRef.get().addOnCompleteListener {
+            if (it.isSuccessful && it.result.exists()) {
+                val doc = it.result
+                val users: java.util.ArrayList<MutableMap<String, String>> =
+                    doc.get("Users") as java.util.ArrayList<MutableMap<String, String>>
 
-        // Do the same process for toUser
-        if (toGroups == null) {
-            toGroups = mutableMapOf()
-        }
-        // Indicate that this user is apart of this chat group
-        toGroups!![groupId] = true
-        toUser.groups = toGroups
-        println("sendMessage: toUser: ${toUser.userName}, ${toUser.uId}")
-        println("sendMessage: toUser groups size ${toUser.groups!!.size}")
-        // Write this new data to the db
-        fsDb.collection("users").document(toUser.uId)
-            .update(mapOf("groups" to toGroups))
-        fsDb.collection("groups").document(toUser.uId)
-            .collection("userGroups").document(groupId).set(fromUser, SetOptions.merge())
+                for (userInd in 0 until users.size - 1) {
+                    val curUserMap = users[userInd]
+                    val mName = curUserMap["userName"]
+                    groupName = "$groupName $mName"
+                }
+                val toolBar = findViewById<Toolbar>(R.id.contacts_toolbar)
+                toolBar.title = groupName
 
+
+            } else {
+
+            }
+        }
+    }
+
+
+    private fun sendMessage(msg: ConcordMessage,  fileToSend: File? = null) {
+
+        // Add the message to the db
+        // The actual message will be nested within
+        // messages
+        //      |-> groupMessages
+        //          |-> [groupId]
+        //              |-> message_1
+        //              . . .
+        //              |-> message_n
+        // Currently a group only holds 2 people
         if (msg.image) {
             val imageFileName = msg.imageName + ".jpg"  // one image per message
             val storage = Firebase.storage
@@ -289,9 +263,6 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
         }
         // Add the message to the receiving user's inbox
         // A user's inbox is a collection of every message sent to them, used for notifications
-        fsDb.collection("userInbox").document(toUser.uId)
-            .collection("messages").add(msg)
-
     }
 
     override fun onStart() {
@@ -321,4 +292,8 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
         takePicture.launch(uri)
     }
 
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
+    }
 }

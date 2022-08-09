@@ -16,6 +16,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.group2.concord_messenger.ContactsActivityFolder.ContactsActivity2
 import com.group2.concord_messenger.model.UserProfile
 
 
@@ -30,6 +31,8 @@ class ChatListActivity : AppCompatActivity() {
     private lateinit var chatsListView: ListView
     private var chatListAdapter: ArrayAdapter<String>? = null
     private lateinit var fab: FloatingActionButton
+    private lateinit var fabForGroup: FloatingActionButton
+
     private lateinit var profileButton: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +42,7 @@ class ChatListActivity : AppCompatActivity() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar_chat_list)
         setSupportActionBar(toolbar)
         fab = findViewById(R.id.fab)
+        fabForGroup = findViewById(R.id.fab2)
         profileButton = findViewById(R.id.profile_button)
 
         // Get the Firestore instance, which holds all users, messages, and groups
@@ -60,6 +64,10 @@ class ChatListActivity : AppCompatActivity() {
                     val intent = Intent(this, ContactsActivity::class.java)
                     startActivity(intent)
                 }
+                fabForGroup.setOnClickListener {
+                    val intent = Intent(this, ContactsActivity2::class.java)
+                    startActivity(intent)
+                }
             } else {
                 // Temporary solution to insert the logged-in user who is authenticated with
                 // Firebase but not in the Concord Messenger database
@@ -75,6 +83,10 @@ class ChatListActivity : AppCompatActivity() {
                             // User info gathered, show chats associated with the current user
                             showCurrentChats()
                             // Now safe to enable the FAB to create a new chat
+                            fabForGroup.setOnClickListener {
+                                val intent = Intent(this, ContactsActivity2::class.java)
+                                startActivity(intent)
+                            }
                             fab.setOnClickListener {
                                 val intent = Intent(this, ContactsActivity::class.java)
                                 startActivity(intent)

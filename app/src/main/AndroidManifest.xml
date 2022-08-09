@@ -36,7 +36,7 @@
         <activity
             android:name=".AddContactsActivity"
             android:exported="false"
-            android:parentActivityName=".ContactsActivity"/>
+            android:parentActivityName=".ContactsActivityFolder.ContactsActivity2"/>
         <activity
             android:name=".RegisterActivity"
             android:exported="false"
@@ -45,9 +45,11 @@
             android:name=".HomeActivity"
             android:exported="false" />
         <activity
+            android:name=".ContactsActivityFolder.ContactsActivity2"
+            android:exported="false" />
+        <activity
             android:name=".ContactsActivity"
-            android:exported="false"
-            android:parentActivityName=".ChatListActivity"/>
+            android:exported="false" />
         <activity
             android:name=".ChatActivity"
             android:exported="true"
@@ -57,6 +59,9 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".GroupChatActivity"
+            android:exported="true" />
         <activity
             android:name=".ChatListActivity"
             android:exported="true"
