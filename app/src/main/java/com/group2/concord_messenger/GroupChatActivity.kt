@@ -106,12 +106,6 @@ class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, 
                 }
             }
 
-        profileButton = findViewById(R.id.profile_button)
-        profileButton.setOnClickListener {
-            val intent = Intent(this, UserProfileActivity::class.java)
-            intent.putExtra("user", toUser)
-            startActivity(intent)
-        }
     }
 
     private fun updateCurrentUser() {
