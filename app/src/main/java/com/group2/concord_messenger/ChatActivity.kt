@@ -254,6 +254,7 @@ class ChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, Attac
             val storage = Firebase.storage
             val audioRef = storage.reference.child("audio/${audioFileName}")
             // save the audio file in permanent local storage so it doesn't need to be fetched from Firebase everytime the chat is opened
+            checkAudioFilePaths(this)
             val persistentAudioFile = File(this.filesDir, "audio/${audioFileName}")
             // check that audio directory and file do not exist
             if (!persistentAudioFile.exists()) {
