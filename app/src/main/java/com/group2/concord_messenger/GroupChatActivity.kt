@@ -81,7 +81,7 @@ class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, 
         groupId = intent.extras?.get("roomId") as String
         setTitleFromGroup(groupId)
 
-        profileButton.findViewById<Button>(R.id.profile_button)
+        profileButton = findViewById<Button>(R.id.profile_button)
         profileButton.visibility = View.GONE
 
         updateCurrentUser()

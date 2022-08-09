@@ -35,6 +35,8 @@ class ContactsActivity2 : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contacts2)
         recyclerView = findViewById(R.id.contacts_recyclerView)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
 
         ConcordDatabase.getCurrentUser {
             fromUser = it
@@ -273,6 +275,10 @@ class ContactsActivity2 : AppCompatActivity() {
                 }
             }
         }
+    }
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 
 }
