@@ -70,6 +70,7 @@ class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, 
         setContentView(R.layout.activity_chat)
         fsDb = FirebaseFirestore.getInstance()
 
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         editText = findViewById(R.id.edit_gchat_message)
         sendBtn = findViewById(R.id.button_gchat_send)
         attachButton = findViewById(R.id.attachment_button)
@@ -291,5 +292,10 @@ class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, 
     override fun onOpenCameraClick(dialog: DialogFragment) {
         val uri = FileProvider.getUriForFile(this, "com.group2.concord_messenger", File(this.getExternalFilesDir(null), "pictureToShare.jpg"))
         takePicture.launch(uri)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 }
