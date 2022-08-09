@@ -98,8 +98,8 @@ class ChatMessageListAdapter(private val fromUid: String, private val recyclerVi
         newIndex: Int,
         oldIndex: Int
     ) {
-//        super.onChildChanged(type, snapshot, newIndex, oldIndex)
-
+        super.onChildChanged(type, snapshot, newIndex, oldIndex)
+        this.notifyDataSetChanged()
     }
 }
 
