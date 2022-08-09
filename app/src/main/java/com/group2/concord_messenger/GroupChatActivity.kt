@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -79,6 +80,9 @@ class GroupChatActivity : AppCompatActivity(), AudioDialog.AudioDialogListener, 
         fromUser = intent.extras?.get("fromUser") as UserProfile
         groupId = intent.extras?.get("roomId") as String
         setTitleFromGroup(groupId)
+
+        profileButton.findViewById<Button>(R.id.profile_button)
+        profileButton.visibility = View.GONE
 
         updateCurrentUser()
 
