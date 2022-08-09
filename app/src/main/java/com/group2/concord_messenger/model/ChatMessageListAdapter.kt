@@ -7,8 +7,10 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
+import com.firebase.ui.common.ChangeEventType
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import com.group2.concord_messenger.ChatAudioPlayer
@@ -89,6 +91,16 @@ class ChatMessageListAdapter(private val fromUid: String, private val recyclerVi
     override fun onDataChanged() {
         recyclerView.layoutManager?.scrollToPosition(itemCount - 1)
     }
+
+    override fun onChildChanged(
+        type: ChangeEventType,
+        snapshot: DocumentSnapshot,
+        newIndex: Int,
+        oldIndex: Int
+    ) {
+//        super.onChildChanged(type, snapshot, newIndex, oldIndex)
+
+    }
 }
 
 class SentMessageHolder(itemView: View) :
@@ -128,13 +140,13 @@ class SentMessageHolder(itemView: View) :
         }
 
         if (message.audio) {
+            this.setIsRecyclable(false)
             image.visibility = View.GONE
             // This adds backwards compatibility for old audio messages before using a new UUID
             var audioMessageId = message.audioId
             if (audioMessageId == "") {
                 audioMessageId = messageId
             }
-            this.setIsRecyclable(false)
             // if audio file is not saved locally fetch from Firebase and save locally
             val audioFile = File("${itemView.context.filesDir}/audio/$audioMessageId.3gp")
             if (!audioFile.exists() || audioFile.length() <= 0) {
@@ -241,6 +253,7 @@ class ReceivedMessageHolder(itemView: View) :
     }
 
     fun bind(message: ConcordMessage, messageId: String, ap: ChatAudioPlayer, position:Int) {
+        this.setIsRecyclable(false)
         this.ap = ap
         messageText.text = message.text
         nameText.text = message.fromName
@@ -255,7 +268,6 @@ class ReceivedMessageHolder(itemView: View) :
         }
 
         if (message.audio) {
-            this.setIsRecyclable(false)
             image.visibility = View.GONE
             // This adds backwards compatibility for old audio messages before using a new UUID
             var audioMessageId = message.audioId
